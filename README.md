@@ -1,6 +1,6 @@
 # Project 2: Anna Johnson Flooring (DSE 6100)
 
-Partners: Most Afroz (Access ID: ______) and Rifah Tasniya (Access ID: ______)
+Partners: Most Afroz and Rifah Tasniya 
 
 Demo video: PASTE YOUR VIDEO LINK HERE
 
