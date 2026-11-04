@@ -1,6 +1,7 @@
 # Project 2: Anna Johnson Flooring (DSE 6100)
 
-Student(s): YOUR NAME (Access ID: xx0000) / No Partner
+Partners: Most Afroz (Access ID: ______) and Rifah Tasniya (Access ID: ______)
+
 Demo video: PASTE YOUR VIDEO LINK HERE
 
 This is a small web app for Anna Johnson's flooring business. Clients register, send a flooring request
@@ -20,7 +21,7 @@ Python packages are in `requirements.txt` (Flask, PyMySQL, Werkzeug).
 ## 2. Install
 
 ```bash
-cd project2
+cd project2        # if you downloaded from GitHub the folder is DSE6100-Project2-main
 python -m venv venv
 # Windows: venv\Scripts\activate      Mac/Linux: source venv/bin/activate
 pip install -r requirements.txt
@@ -109,8 +110,12 @@ uploads/          Client photos are saved here
 
 ## 7. Contribution
 
-(If working alone, write "No Partner". If with a partner, fill this in.)
+- Most Afroz: GitHub setup, E-R diagram, assumptions and schema (PDF report), client side
+  pages (registration, requests, negotiation, paying and disputing bills), queries 1 to 5,
+  final submission.
+- Rifah Tasniya: setup testing on a second computer and README review, Anna's side (products,
+  quotes, orders, bills and revisions), queries 6 to 10, PDF and sql.txt review, video upload.
+- Both: full end to end test, recording the demo video together.
+- Approximate hours worked together: ___ hours
 
-- Partner 1: ...
-- Partner 2: ...
-- Approximate hours worked together: ...
+(Edit the lines above so they match what each of us really did.)
