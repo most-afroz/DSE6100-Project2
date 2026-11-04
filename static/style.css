@@ -1,0 +1,60 @@
+:root{--ink:#222;--muted:#6b6b6b;--line:#e2ded6;--bg:#faf8f4;--card:#fff;--accent:#8a5a2b;--accent2:#6d4520;--ok:#2f7a45;--bad:#b23b3b}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:12px 24px;background:#3b2a1c;color:#fff}
+header a{color:#f3e6d6;text-decoration:none;margin-left:14px}
+header .brand{font-weight:700;margin:0;font-size:17px;color:#fff}
+.who{margin-left:14px;color:#cdb9a3}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:24px;margin:.4em 0}
+h2{font-size:18px;margin:1.4em 0 .5em}
+a{color:var(--accent)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);margin:8px 0;font-size:14px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f2ede5;font-weight:600}
+tr.off td{color:#aaa}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:12px 0}
+.narrow{max-width:520px;margin:20px auto}
+label{display:block;margin:6px 0;font-size:13px;color:#444}
+input,select,textarea{width:100%;padding:7px 8px;border:1px solid #cfc8bc;border-radius:5px;font:inherit;background:#fff}
+input.small{width:110px}
+.row2,.row3,.row4{display:grid;gap:10px}
+.row2{grid-template-columns:1fr 1fr}.row3{grid-template-columns:repeat(3,1fr)}.row4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:700px){.row2,.row3,.row4{grid-template-columns:1fr}}
+.pair{display:flex;gap:6px}
+button,.btn{display:inline-block;background:var(--accent);color:#fff;border:0;border-radius:5px;padding:8px 14px;font:inherit;cursor:pointer;text-decoration:none;margin:4px 4px 4px 0}
+button:hover,.btn:hover{background:var(--accent2)}
+.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+.ghost:hover{background:#f6efe6}
+.danger{background:var(--bad)}
+.small{padding:4px 8px;font-size:13px}
+.flash{padding:9px 12px;border-radius:5px;margin:8px 0;background:#eef6f0;border:1px solid #b9dcc3}
+.flash.error{background:#fbeeee;border-color:#e6b8b8}
+.muted{color:var(--muted);font-size:13px}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:#eee;color:#444}
+.tag.pending,.tag.unpaid,.tag.scheduled,.tag.open{background:#fff3d6;color:#7a5600}
+.tag.quoted,.tag.negotiating,.tag.in_progress{background:#e3edfb;color:#24508f}
+.tag.accepted,.tag.completed,.tag.paid{background:#e1f2e6;color:#226b3a}
+.tag.rejected,.tag.cancelled,.tag.disputed{background:#f8e1e1;color:#8f2a2a}
+.tag.superseded{background:#eee;color:#888}
+.quote.superseded{opacity:.75}
+.qhead{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+table.items{font-size:13px}
+tr.sum td{background:#faf6ef}
+.msg{border-left:3px solid var(--accent);background:#fff;padding:8px 12px;margin:8px 0}
+.msg.client{border-color:#24508f;margin-left:40px}
+.photos img{height:110px;border-radius:6px;margin:4px;border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.stats div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px}
+.stats b{display:block;font-size:22px}.stats span{color:var(--muted);font-size:13px}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.qcard{display:block;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-decoration:none;color:var(--ink)}
+.qcard:hover{border-color:var(--accent)}
+.qcard span{display:block;color:var(--muted);font-size:13px}
+.qnav a,p a.on{display:inline-block;padding:2px 9px;margin-right:4px;border:1px solid var(--line);border-radius:4px;text-decoration:none;background:#fff}
+.qnav a.on,p a.on{background:var(--accent);color:#fff}
+form.inline{display:flex;gap:10px;align-items:end}
+form.inline label{width:140px}
+pre{background:#2a221b;color:#f4e9dc;padding:12px;border-radius:6px;overflow:auto;font-size:13px}
+.hero{background:#fff;border:1px solid var(--line);border-radius:10px;padding:24px;margin-top:10px}
+.total{font-size:15px}

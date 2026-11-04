@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Order #{{ o.order_id }} <span class="tag {{ o.status }}">{{ o.status.replace('_',' ') }}</span></h1>
+<div class="card">
+  <div class="row3">
+    <div><b>Client</b><br>{{ o.client_name }}<br>{{ o.service_address }}</div>
+    <div><b>Agreed price</b><br>{{ o.agreed_price|usd }} (quote v{{ o.version_no }}, <a href="{{ url_for('request_view', rid=o.request_id) }}">request #{{ o.request_id }}</a>)</div>
+    <div><b>Scheduled</b> {{ o.scheduled_start }}{% if o.scheduled_end %} to {{ o.scheduled_end }}{% endif %}<br>
+    <b>Installed</b> {{ o.actual_install_date or '-' }}<br><b>Completed</b> {{ o.completion_date or '-' }}</div>
+  </div>
+  {% if o.completion_note %}<p><b>Notes:</b> {{ o.completion_note }}</p>{% endif %}
+</div>
+<form method="post">
+<table>
+<tr><th>Room</th><th>Product</th><th>Area</th><th>Estimated material ({{ o.waste_pct }}% waste)</th><th>Actual used</th></tr>
+{% for it in items %}
+<tr><td>{{ it.room_name }}</td><td>{{ it.product_name }}</td><td>{{ it.installed_sqft }} sq ft</td><td>{{ it.est_qty_sqft }} sq ft</td>
+<td>{% if role=='anna' and o.status in ('scheduled','in_progress') %}<input type="number" step="0.01" min="0.01" name="actual_{{ it.order_item_id }}" value="{{ it.est_qty_sqft }}" class="small">{% else %}{{ it.actual_qty_sqft or '-' }}{% endif %}</td></tr>
+{% endfor %}
+</table>
+{% if role=='anna' and o.status in ('scheduled','in_progress') %}
+<div class="card actions">
+  <div class="row3">
+    <label>Actual install date<input type="date" name="actual_install_date" value="{{ o.actual_install_date or today }}"></label>
+    <label>Completion date<input type="date" name="completion_date" value="{{ today }}"></label>
+    <label>Notes<input name="completion_note"></label>
+  </div>
+  {% if o.status == 'scheduled' %}<button name="action" value="start" class="ghost">Mark in progress</button>{% endif %}
+  <button name="action" value="complete">Mark completed (saves actual quantities)</button>
+  <button name="action" value="cancel" class="danger">Cancel order</button>
+</div>
+{% endif %}
+</form>
+<h2>Bills</h2>
+{% for b in bills %}<p><a href="{{ url_for('bill_view', bid=b.bill_id) }}">Bill {{ b.bill_id }} v{{ b.version_no }}</a> · {{ b.amount_due|usd }} · <span class="tag {{ b.status }}">{{ b.status }}</span></p>
+{% else %}<p class="muted">No bill yet.</p>
+{% if role=='anna' and o.status=='completed' %}<p><a class="btn" href="{{ url_for('bill_form', oid=o.order_id) }}">Generate bill</a></p>{% endif %}
+{% endfor %}
+{% endblock %}

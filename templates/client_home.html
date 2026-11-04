@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>My projects</h1>
+<p class="muted">Client ID {{ me.client_id }} · {{ me.email }} · card ending {{ me.card_number[-4:] }}</p>
+<p><a class="btn" href="{{ url_for('request_new') }}">+ New flooring request</a></p>
+<h2>Requests and quotes</h2>
+{% if reqs %}
+<table>
+<tr><th>#</th><th>Submitted</th><th>Address</th><th>Rooms</th><th>Area</th><th>Quotes</th><th>Status</th><th></th></tr>
+{% for r in reqs %}
+<tr><td>{{ r.request_id }}</td><td>{{ r.created_at.strftime('%b %d, %Y') }}</td><td>{{ r.service_address }}</td>
+<td>{{ r.room_count }}</td><td>{{ r.total_sqft }} sq ft</td><td>{{ r.n_quotes }}</td>
+<td><span class="tag {{ r.status }}">{{ r.status }}</span></td><td><a href="{{ url_for('request_view', rid=r.request_id) }}">Open</a></td></tr>
+{% endfor %}
+</table>
+{% else %}<p class="muted">No requests yet.</p>{% endif %}
+<h2>Orders</h2>
+{% if orders %}
+<table>
+<tr><th>Order</th><th>Agreed price</th><th>Scheduled</th><th>Status</th><th></th></tr>
+{% for o in orders %}
+<tr><td>#{{ o.order_id }}</td><td>{{ o.agreed_price|usd }}</td><td>{{ o.scheduled_start }}</td>
+<td><span class="tag {{ o.status }}">{{ o.status.replace('_',' ') }}</span></td><td><a href="{{ url_for('order_view', oid=o.order_id) }}">Open</a></td></tr>
+{% endfor %}
+</table>
+{% else %}<p class="muted">No orders yet.</p>{% endif %}
+<h2>Bills (all versions)</h2>
+{% if bills %}
+<table>
+<tr><th>Bill</th><th>Order</th><th>Version</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr>
+{% for b in bills %}
+<tr><td>{{ b.bill_id }}</td><td>#{{ b.order_id }}</td><td>v{{ b.version_no }}</td><td>{{ b.created_at.strftime('%b %d, %Y') }}</td>
+<td>{{ b.amount_due|usd }}</td><td><span class="tag {{ b.status }}">{{ b.status }}</span></td><td><a href="{{ url_for('bill_view', bid=b.bill_id) }}">Open</a></td></tr>
+{% endfor %}
+</table>
+{% else %}<p class="muted">No bills yet.</p>{% endif %}
+{% endblock %}

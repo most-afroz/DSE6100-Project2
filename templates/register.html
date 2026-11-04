@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card narrow">
+<h1>Register</h1>
+<form method="post">
+  <div class="row2">
+    <label>First name<input name="first_name" value="{{ f.first_name }}" required></label>
+    <label>Last name<input name="last_name" value="{{ f.last_name }}" required></label>
+  </div>
+  <label>Address<input name="address" value="{{ f.address }}" required></label>
+  <div class="row2">
+    <label>Phone<input name="phone" value="{{ f.phone }}" required></label>
+    <label>Email<input type="email" name="email" value="{{ f.email }}" required></label>
+  </div>
+  <label>Password<input type="password" name="password" minlength="6" required></label>
+  <h3>Credit card</h3>
+  <label>Name on card<input name="card_holder" value="{{ f.card_holder }}" required></label>
+  <label>Card number<input name="card_number" inputmode="numeric" maxlength="19" placeholder="16 digits" required></label>
+  <div class="row2">
+    <label>Exp. month<input type="number" name="card_exp_month" min="1" max="12" value="{{ f.card_exp_month }}" required></label>
+    <label>Exp. year<input type="number" name="card_exp_year" min="2026" max="2100" value="{{ f.card_exp_year }}" required></label>
+  </div>
+  <button>Create account</button>
+</form>
+</div>
+{% endblock %}

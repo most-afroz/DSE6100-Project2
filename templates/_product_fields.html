@@ -1,0 +1,17 @@
+<div class="row3">
+  <label>Product name<input name="product_name" value="{{ p.product_name or '' }}" required></label>
+  <label>Brand / manufacturer<input name="brand" value="{{ p.brand or '' }}" required></label>
+  <label>Category<select name="category_id">{% for c in cats %}<option value="{{ c.category_id }}" {% if c.category_id == p.category_id %}selected{% endif %}>{{ c.category_name }}</option>{% endfor %}</select></label>
+</div>
+<div class="row3">
+  <label>Or new category<input name="new_category" placeholder="leave empty to use the list"></label>
+  <label>Material / style<input name="material_style" value="{{ p.material_style or '' }}"></label>
+  <label>Color<input name="color" value="{{ p.color or '' }}"></label>
+</div>
+<div class="row4">
+  <label>Unit price ($)<input type="number" step="0.01" min="0.01" name="unit_price" value="{{ p.unit_price or '' }}" required></label>
+  <label>Pricing unit<select name="pricing_unit">{% for u in ['sq_ft','box','piece'] %}<option value="{{ u }}" {% if p.pricing_unit == u %}selected{% endif %}>{{ u.replace('_',' ') }}</option>{% endfor %}</select></label>
+  <label>Sq ft per box/piece<input type="number" step="0.01" min="0" name="sqft_per_unit" value="{{ p.sqft_per_unit or '' }}"></label>
+  <label>Size L × W (in)<span class="pair"><input type="number" step="0.01" min="0" name="length_in" value="{{ p.length_in or '' }}"><input type="number" step="0.01" min="0" name="width_in" value="{{ p.width_in or '' }}"></span></label>
+</div>
+<label>Description<textarea name="description" rows="2">{{ p.description or '' }}</textarea></label>

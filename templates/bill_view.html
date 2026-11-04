@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Bill for Order #{{ b.order_id }}</h1>
+<p class="muted">{{ b.client_name }} · agreed price {{ b.agreed_price|usd }} · <a href="{{ url_for('order_view', oid=b.order_id) }}">order</a> · <a href="{{ url_for('request_view', rid=b.request_id) }}">request #{{ b.request_id }}</a></p>
+
+{% for v in versions|reverse %}
+<div class="card quote {{ v.status }}">
+  <div class="qhead"><b>Bill {{ v.bill_id }} · version {{ v.version_no }}</b> <span class="tag {{ v.status }}">{{ v.status }}</span>
+  <span class="muted">{{ v.created_at.strftime('%b %d, %Y %I:%M %p') }}</span></div>
+  <table class="items">
+  {% for i in v["items"] %}<tr><td>{{ i.item_type.replace('_',' ') }}</td><td>{{ i.description }}</td><td>{{ i.amount|usd }}</td></tr>{% endfor %}
+  <tr class="sum"><td colspan="2">Amount due</td><td><b>{{ v.amount_due|usd }}</b></td></tr>
+  </table>
+  {% if v.note %}<p><i>{{ v.note }}</i></p>{% endif %}
+  {% if v.paid_at %}<p class="flash ok">Paid {{ v.paid_amount|usd }} on {{ v.paid_at.strftime('%b %d, %Y %I:%M %p') }} with card ending {{ v.card_last4 }}</p>{% endif %}
+</div>
+{% endfor %}
+
+<h2>Messages</h2>
+{% for m in msgs %}
+<div class="msg {{ m.sender }}"><b>{{ 'Anna' if m.sender=='contractor' else b.client_name }}</b> <span class="tag">{{ m.msg_type }}</span> <span class="muted">on v{{ m.version_no }} · {{ m.created_at.strftime('%b %d, %Y %I:%M %p') }}</span><div>{{ m.message }}</div></div>
+{% else %}<p class="muted">No messages.</p>{% endfor %}
+
+{% if current.status in ('unpaid','disputed') %}
+  {% if role == 'client' %}
+  <div class="card actions">
+    <h3>Current bill: {{ current.amount_due|usd }}</h3>
+    <form method="post" action="{{ url_for('bill_pay', bid=current.bill_id) }}" style="display:inline"><button>Pay with card on file</button></form>
+    <form method="post" action="{{ url_for('bill_dispute', bid=current.bill_id) }}">
+      <label>Or dispute it<textarea name="message" rows="2" placeholder="The additional labor charge was never approved." required></textarea></label>
+      <button class="danger">Dispute bill</button>
+    </form>
+  </div>
+  {% elif role == 'anna' %}
+  <div class="card actions">
+    <h3>Respond to the client</h3>
+    <form method="post" action="{{ url_for('bill_respond', bid=current.bill_id) }}">
+      <label>Message<textarea name="message" rows="2"></textarea></label>
+      <button name="action" value="explain" class="ghost">Send explanation only</button>
+      <h4>Or make a revised bill (v{{ current.version_no + 1 }}) with adjustment lines</h4>
+      {% for k in range(3) %}
+      <div class="row3"><label>Type<select name="adj_type">{% for e in extras %}<option>{{ e }}</option>{% endfor %}</select></label>
+      <label>Description<input name="adj_desc"></label><label>Amount ($)<input type="number" step="0.01" min="0" name="adj_amount"></label></div>
+      {% endfor %}
+      <p class="muted">Discount and credit lines are subtracted. The old version is kept as "superseded".</p>
+      <button name="action" value="revise">Create revised bill</button>
+    </form>
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

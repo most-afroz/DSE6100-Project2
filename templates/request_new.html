@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>New flooring request</h1>
+<form method="post" enctype="multipart/form-data">
+<div class="card">
+  <label>Service address<input name="service_address" value="{{ default_address }}" required></label>
+  <div class="row3">
+    <label>Preferred start<input type="date" name="pref_start_date" required></label>
+    <label>Preferred end (optional)<input type="date" name="pref_end_date"></label>
+    <label>Budget ($)<input type="number" step="0.01" min="1" name="budget"></label>
+  </div>
+  <label>Notes<textarea name="note" rows="2" placeholder="e.g. I have two dogs, need waterproof floor in basement"></textarea></label>
+</div>
+<h2>Rooms / areas</h2>
+<p class="muted">Give length and width in feet, or just the total square feet.</p>
+<div id="rooms"></div>
+<button type="button" class="ghost" onclick="addRoom()">+ Add another room</button>
+<p class="total">Total requested area: <b id="tot">0</b> sq ft</p>
+<div class="card">
+  <label>Photos (up to 5)<input type="file" name="photos" accept="image/*" multiple onchange="if(this.files.length>5){alert('Max 5 photos');this.value=''}"></label>
+</div>
+<button>Submit request</button>
+</form>
+
+<template id="roomTpl">
+<div class="card room">
+  <div class="row3">
+    <label>Room name<input name="room_name" placeholder="Living room" required></label>
+    <label>Type<select name="room_type">{% for t in room_types %}<option>{{ t }}</option>{% endfor %}</select></label>
+    <label>Flooring wanted<select name="product_id">{% for p in products %}<option value="{{ p.product_id }}">{{ p.category_name }}: {{ p.product_name }} ({{ p.unit_price|usd }}/{{ p.pricing_unit.replace('_',' ') }})</option>{% endfor %}</select></label>
+  </div>
+  <div class="row4">
+    <label>Length (ft)<input type="number" step="0.01" min="0" name="length" oninput="calc()"></label>
+    <label>Width (ft)<input type="number" step="0.01" min="0" name="width" oninput="calc()"></label>
+    <label>or total sq ft<input type="number" step="0.01" min="0" name="sqft" oninput="calc()"></label>
+    <label>Current floor<input name="current" placeholder="carpet, tile, none"></label>
+  </div>
+  <div class="row3">
+    <label>Remove old floor?<select name="removal"><option value="0">No</option><option value="1">Yes</option></select></label>
+    <label>Pattern<select name="pattern">{% for p in patterns %}<option>{{ p }}</option>{% endfor %}</select></label>
+    <label>&nbsp;<button type="button" class="ghost small" onclick="this.closest('.room').remove();calc()">Remove room</button></label>
+  </div>
+</div>
+</template>
+<script>
+function addRoom(){document.getElementById('rooms').appendChild(document.getElementById('roomTpl').content.cloneNode(true));}
+function calc(){let t=0;document.querySelectorAll('.room').forEach(r=>{const l=+r.querySelector('[name=length]').value,w=+r.querySelector('[name=width]').value,s=+r.querySelector('[name=sqft]').value;t+=(l&&w)?l*w:s;});document.getElementById('tot').textContent=t.toFixed(2);}
+addRoom();
+</script>
+{% endblock %}

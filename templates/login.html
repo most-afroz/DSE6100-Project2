@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card narrow">
+<h1>{{ 'Anna Johnson login' if who=='anna' else 'Client login' }}</h1>
+<form method="post">
+  <label>{{ 'Username' if who=='anna' else 'Email' }}<input name="email" required autofocus></label>
+  <label>Password<input type="password" name="password" required></label>
+  <button>Log in</button>
+</form>
+{% if who != 'anna' %}<p>New here? <a href="{{ url_for('register') }}">Register</a></p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Request #{{ r.request_id }} <span class="tag {{ r.status }}">{{ r.status }}</span></h1>
+<div class="card">
+  <div class="row3">
+    <div><b>Client</b><br>{{ r.client_name }}<br><span class="muted">{{ r.email }} · {{ r.phone }}</span></div>
+    <div><b>Service address</b><br>{{ r.service_address }}</div>
+    <div><b>Preferred dates</b><br>{{ r.pref_start_date }}{% if r.pref_end_date %} to {{ r.pref_end_date }}{% endif %}<br>
+         <b>Budget</b> {{ r.budget|usd }}</div>
+  </div>
+  {% if r.note %}<p><b>Notes:</b> {{ r.note }}</p>{% endif %}
+  <p class="muted">Submitted {{ r.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
+</div>
+
+<h2>Rooms ({{ r.room_count }}) · total {{ r.total_sqft }} sq ft</h2>
+<table>
+<tr><th>Room</th><th>Type</th><th>Size</th><th>Area</th><th>Flooring wanted</th><th>Current</th><th>Removal</th><th>Pattern</th></tr>
+{% for rm in rooms %}
+<tr><td>{{ rm.room_name }}</td><td>{{ rm.room_type }}</td>
+<td>{% if rm.length_ft %}{{ rm.length_ft }} × {{ rm.width_ft }} ft{% else %}-{% endif %}</td>
+<td>{{ rm.sqft }} sq ft</td><td>{{ rm.product_name }}</td><td>{{ rm.current_flooring or '-' }}</td>
+<td>{{ 'Yes' if rm.removal_required else 'No' }}</td><td>{{ rm.install_pattern }}</td></tr>
+{% endfor %}
+</table>
+
+{% if photos %}
+<h2>Photos</h2>
+<div class="photos">{% for p in photos %}<a href="{{ url_for('uploaded', fname=p.file_name) }}" target="_blank"><img src="{{ url_for('uploaded', fname=p.file_name) }}" alt="photo {{ p.photo_no }}"></a>{% endfor %}</div>
+{% endif %}
+
+<h2>Quote and negotiation history</h2>
+{% if not timeline %}<p class="muted">Nothing yet. Waiting for Anna.</p>{% endif %}
+<div class="timeline">
+{% for kind, when, x in timeline %}
+  {% if kind == 'quote' %}
+  <div class="card quote {{ x.status }}">
+    <div class="qhead"><b>Quote v{{ x.version_no }}</b> <span class="tag {{ x.status }}">{{ x.status }}</span>
+      <span class="muted">{{ when.strftime('%b %d, %Y %I:%M %p') }}</span></div>
+    <table class="items">
+      <tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>
+      {% for i in x["items"] %}<tr><td>{{ i.description }}</td><td>{{ i.quantity }} {{ i.unit }}</td><td>{{ i.unit_price|usd }}</td><td>{{ i.amount|usd }}</td></tr>{% endfor %}
+      <tr class="sum"><td colspan="3">Material {{ x.material_cost|usd }} · Labor {{ x.labor_cost|usd }} · Other {{ x.other_cost|usd }}</td><td><b>{{ x.total_price|usd }}</b></td></tr>
+    </table>
+    <p>Waste factor {{ x.waste_pct }}% · Proposed install {{ x.proposed_start }}{% if x.proposed_end %} to {{ x.proposed_end }}{% endif %}
+    {% if x.decided_at %} · decided {{ x.decided_at.strftime('%b %d, %Y') }}{% endif %}</p>
+    {% if x.note %}<p><i>Anna: {{ x.note }}</i></p>{% endif %}
+  </div>
+  {% else %}
+  <div class="msg {{ x.sender }}">
+    <b>{{ 'Anna' if x.sender=='contractor' else r.client_name }}</b> <span class="tag">{{ x.msg_type }}</span>
+    <span class="muted">{{ when.strftime('%b %d, %Y %I:%M %p') }}</span>
+    <div>{{ x.message }}</div>
+  </div>
+  {% endif %}
+{% endfor %}
+</div>
+
+{% if order %}
+<p class="flash ok">This request became <a href="{{ url_for('order_view', oid=order.order_id) }}">Order #{{ order.order_id }}</a> ({{ order.status.replace('_',' ') }}).</p>
+{% endif %}
+
+{% if role == 'client' %}
+  {% if open_quote %}
+  <div class="card actions">
+    <h3>Respond to quote v{{ open_quote.version_no }} ({{ open_quote.total_price|usd }})</h3>
+    <form method="post" action="{{ url_for('client_respond', rid=r.request_id) }}">
+      <label>Message (needed for a counterproposal)<textarea name="message" rows="2" placeholder="Can we keep the total under $6,000?"></textarea></label>
+      <button name="action" value="accept">Accept quote</button>
+      <button name="action" value="counter" class="ghost">Send counterproposal</button>
+      <button name="action" value="reject" class="danger">Reject and cancel</button>
+    </form>
+  </div>
+  {% elif r.status == 'pending' %}
+  <form method="post" action="{{ url_for('client_cancel', rid=r.request_id) }}" class="card actions">
+    <label>Cancel this request? (optional reason)<input name="message"></label>
+    <button class="danger">Cancel request</button>
+  </form>
+  {% endif %}
+{% elif role == 'anna' and r.status in ('pending','quoted','negotiating') %}
+  <div class="card actions">
+    <h3>Anna's actions</h3>
+    <p><a class="btn" href="{{ url_for('quote_form', rid=r.request_id) }}">{{ 'Send a new quote' if quotes else 'Create quote' }}</a></p>
+    <form method="post" action="{{ url_for('anna_reply', rid=r.request_id) }}">
+      <label>Message<textarea name="message" rows="2" placeholder="Explanation or a note to the client"></textarea></label>
+      <button name="action" value="note" class="ghost">Send note only</button>
+      <button name="action" value="reject" class="danger">Reject request</button>
+    </form>
+  </div>
+{% endif %}
+{% endblock %}

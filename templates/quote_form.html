@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>{{ 'New quote v' ~ (last.version_no + 1) if last else 'Quote v1' }} for request #{{ r.request_id }}</h1>
+<p class="muted">{{ r.client_name }} · {{ r.service_address }} · budget {{ r.budget|usd }} · {{ r.total_sqft }} sq ft{% if r.note %} · "{{ r.note }}"{% endif %}</p>
+{% if last %}<p class="muted">Last quote was v{{ last.version_no }} for {{ last.total_price|usd }} ({{ last.status }}). It will be kept in history, not overwritten.</p>{% endif %}
+<form method="post">
+<div class="card">
+<h3>Material per room</h3>
+<table>
+<tr><th>Room</th><th>Area</th><th>Removal</th><th>Product (change if negotiating)</th></tr>
+{% for rm in rooms %}
+<tr><td>{{ rm.room_name }}</td><td>{{ rm.sqft }} sq ft</td><td>{{ 'Yes' if rm.removal_required else 'No' }}</td>
+<td><select name="product_{{ rm.room_id }}">{% for p in prods %}<option value="{{ p.product_id }}" {% if p.product_id == rm.product_id %}selected{% endif %}>{{ p.category_name }}: {{ p.product_name }} ({{ p.unit_price|usd }}/{{ p.pricing_unit.replace('_',' ') }})</option>{% endfor %}</select></td></tr>
+{% endfor %}
+</table>
+<div class="row3">
+  <label>Waste %<input type="number" step="0.5" min="0" max="50" name="waste_pct" value="{{ last.waste_pct if last else 10 }}" required></label>
+  <label>Labor rate ($/sq ft)<input type="number" step="0.01" min="0" name="labor_rate" value="2.50"></label>
+  <label>Removal rate ($/sq ft, rooms marked Yes)<input type="number" step="0.01" min="0" name="removal_rate" value="1.00"></label>
+</div>
+</div>
+<div class="card">
+<h3>Other charges</h3>
+<div class="row3">
+{% for e in extras %}<label>{{ e.capitalize() }} ($){% if e=='discount' %} <span class="muted">subtracted</span>{% endif %}<input type="number" step="0.01" min="0" name="{{ e }}"></label>{% endfor %}
+</div>
+</div>
+<div class="card">
+<div class="row2">
+  <label>Proposed install start<input type="date" name="proposed_start" value="{{ r.pref_start_date }}" required></label>
+  <label>Proposed end<input type="date" name="proposed_end" value="{{ r.pref_end_date or '' }}"></label>
+</div>
+<label>Note to client<textarea name="note" rows="2"></textarea></label>
+</div>
+<p class="muted">Material quantity = area × (1 + waste%). Box products are rounded up to whole boxes. Totals are computed on save.</p>
+<button>Send quote</button> <a href="{{ url_for('request_view', rid=r.request_id) }}">Back</a>
+</form>
+{% endblock %}

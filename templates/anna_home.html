@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Anna's dashboard</h1>
+<div class="stats">
+  <div><b>{{ stats.clients }}</b><span>clients</span></div>
+  <div><b>{{ stats.needs_reply }}</b><span>requests need a reply</span></div>
+  <div><b>{{ stats.active_orders }}</b><span>active orders</span></div>
+  <div><b>{{ stats.outstanding|usd }}</b><span>unpaid bills</span></div>
+</div>
+<h2>Reports (SQL queries)</h2>
+<div class="qgrid">
+{% for n, q in queries.items() %}<a class="qcard" href="{{ url_for('run_query', n=n) }}"><b>{{ n }}. {{ q.title }}</b><span>{{ q.desc }}</span></a>{% endfor %}
+</div>
+<h2>Waiting on me</h2>
+{% if todo %}
+<table><tr><th>#</th><th>Client</th><th>Submitted</th><th>Area</th><th>Status</th><th></th></tr>
+{% for r in todo %}<tr><td>{{ r.request_id }}</td><td>{{ r.client_name }}</td><td>{{ r.created_at.strftime('%b %d') }}</td><td>{{ r.total_sqft }} sq ft</td>
+<td><span class="tag {{ r.status }}">{{ r.status }}</span></td><td><a href="{{ url_for('request_view', rid=r.request_id) }}">Open</a></td></tr>{% endfor %}
+</table>
+{% else %}<p class="muted">All caught up.</p>{% endif %}
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Edit {{ p.product_name }}</h1>
+<div class="card"><form method="post">{% include "_product_fields.html" %}<button>Save</button> <a href="{{ url_for('products') }}">Back</a></form></div>
+<form method="post"><input type="hidden" name="toggle" value="1"><button class="ghost">{{ 'Hide from catalog' if p.is_active else 'Show in catalog again' }}</button></form>
+<p class="muted">Products are hidden instead of deleted, because old quotes and orders still point to them.</p>
+{% endblock %}

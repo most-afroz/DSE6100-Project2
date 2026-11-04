@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Generate bill for Order #{{ o.order_id }}</h1>
+<p class="muted">{{ o.client_name }} · accepted quote v{{ o.version_no }} = {{ o.agreed_price|usd }} (this line is added for you)</p>
+<form method="post">
+<div class="card">
+<h3>Changes from the quote</h3>
+{% set rows = suggest + [{}, {}, {}] %}
+{% for s in rows %}
+<div class="row3">
+  <label>Type<select name="type">{% for e in extras %}<option {% if s.item_type==e %}selected{% endif %}>{{ e }}</option>{% endfor %}</select></label>
+  <label>Description<input name="desc" value="{{ s.description or '' }}"></label>
+  <label>Amount ($)<input type="number" step="0.01" min="0" name="amount" value="{{ s.amount or '' }}"></label>
+</div>
+{% endfor %}
+<p class="muted">Pre-filled lines come from actual material used above the estimate. Discount and credit are subtracted.</p>
+<label>Note<textarea name="note" rows="2"></textarea></label>
+</div>
+<button>Create bill</button>
+</form>
+{% endblock %}

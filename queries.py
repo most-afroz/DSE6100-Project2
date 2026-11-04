@@ -1,0 +1,188 @@
+"""The 10 dashboard queries. sql.txt is generated from this file (python make_sqltxt.py)
+so the SQL the grader reads is exactly the SQL the website runs."""
+
+# A bill "counts" unless it was replaced by a newer version (status = superseded).
+# Overdue = not paid within 7 days of the bill date.
+
+QUERIES = {
+1: dict(title="Best Customers",
+        desc="Clients ranked by total money paid on completed projects.",
+        sql="""
+SELECT c.client_id,
+       CONCAT(c.first_name, ' ', c.last_name) AS client,
+       c.email,
+       COUNT(DISTINCT o.order_id)             AS completed_projects,
+       SUM(p.amount)                          AS total_paid
+FROM client c
+JOIN service_order o ON o.client_id = c.client_id AND o.status = 'completed'
+JOIN bill b          ON b.order_id  = o.order_id
+JOIN payment p       ON p.bill_id   = b.bill_id
+GROUP BY c.client_id, c.first_name, c.last_name, c.email
+ORDER BY total_paid DESC
+LIMIT 10"""),
+
+2: dict(title="Window Shoppers",
+        desc="Clients with 3 or more requests who never accepted a quote.",
+        sql="""
+SELECT c.client_id,
+       CONCAT(c.first_name, ' ', c.last_name) AS client,
+       c.email,
+       COUNT(DISTINCT r.request_id)           AS requests,
+       COUNT(DISTINCT q.quote_id)             AS quotes_received
+FROM client c
+JOIN flooring_request r ON r.client_id = c.client_id
+LEFT JOIN quote q       ON q.request_id = r.request_id
+GROUP BY c.client_id, c.first_name, c.last_name, c.email
+HAVING COUNT(DISTINCT r.request_id) >= 3
+   AND COALESCE(SUM(q.status = 'accepted'), 0) = 0
+ORDER BY requests DESC"""),
+
+3: dict(title="This Month's Flooring Sales",
+        desc="Accepted quotes in a chosen month and year.",
+        params=["year", "month"],
+        sql="""
+SELECT CONCAT(c.first_name, ' ', c.last_name)          AS client,
+       CONCAT('Request #', r.request_id, ' (', ra.room_count, ' rooms, ',
+              ra.total_sqft, ' sq ft)')                 AS project,
+       q.version_no                                     AS quote_version,
+       q.decided_at                                     AS accepted_date,
+       q.total_price                                    AS quoted_amount,
+       o.scheduled_start                                AS scheduled_install
+FROM quote q
+JOIN flooring_request r ON r.request_id = q.request_id
+JOIN request_area ra    ON ra.request_id = r.request_id
+JOIN client c           ON c.client_id  = r.client_id
+LEFT JOIN service_order o ON o.quote_id = q.quote_id
+WHERE q.status = 'accepted'
+  AND YEAR(q.decided_at)  = %(year)s
+  AND MONTH(q.decided_at) = %(month)s
+ORDER BY q.decided_at"""),
+
+4: dict(title="Registered but Inactive Clients",
+        desc="Clients who never submitted a flooring request.",
+        sql="""
+SELECT c.client_id,
+       CONCAT(c.first_name, ' ', c.last_name) AS client,
+       c.email, c.phone,
+       c.registered_at
+FROM client c
+LEFT JOIN flooring_request r ON r.client_id = c.client_id
+WHERE r.request_id IS NULL
+ORDER BY c.registered_at"""),
+
+5: dict(title="Largest Flooring Project",
+        desc="Completed project(s) with the most installed square feet. Ties are all shown.",
+        sql="""
+WITH project AS (
+    SELECT o.order_id, o.client_id, o.completion_date,
+           SUM(oi.installed_sqft) AS total_sqft,
+           COALESCE((SELECT b.amount_due FROM bill b
+                     WHERE b.order_id = o.order_id AND b.status <> 'superseded'
+                     ORDER BY b.version_no DESC LIMIT 1), o.agreed_price) AS total_price
+    FROM service_order o
+    JOIN order_item oi ON oi.order_id = o.order_id
+    WHERE o.status = 'completed'
+    GROUP BY o.order_id, o.client_id, o.completion_date, o.agreed_price
+)
+SELECT CONCAT(c.first_name, ' ', c.last_name) AS client,
+       CONCAT('Order #', p.order_id)          AS project,
+       p.total_sqft, p.completion_date, p.total_price
+FROM project p
+JOIN client c ON c.client_id = p.client_id
+WHERE p.total_sqft = (SELECT MAX(total_sqft) FROM project)"""),
+
+6: dict(title="Most Popular Flooring Materials",
+        desc="Installed square feet per product, biggest first. Never-installed products show 0.",
+        sql="""
+SELECT p.product_id, p.product_name, pc.category_name AS category, p.brand,
+       COALESCE(SUM(done.installed_sqft), 0) AS installed_sqft,
+       COUNT(DISTINCT done.order_id)         AS projects
+FROM product p
+JOIN product_category pc ON pc.category_id = p.category_id
+LEFT JOIN (SELECT oi.product_id, oi.order_id, oi.installed_sqft
+           FROM order_item oi
+           JOIN service_order o ON o.order_id = oi.order_id
+           WHERE o.status = 'completed') AS done
+       ON done.product_id = p.product_id
+GROUP BY p.product_id, p.product_name, pc.category_name, p.brand
+ORDER BY installed_sqft DESC, p.product_name"""),
+
+7: dict(title="Material Cost Analysis",
+        desc="Completed projects where actual material used was at least 10% over the estimate.",
+        sql="""
+SELECT CONCAT(c.first_name, ' ', c.last_name)               AS client,
+       CONCAT('Order #', o.order_id)                        AS project,
+       p.product_name                                       AS product,
+       SUM(oi.est_qty_sqft)                                 AS estimated_qty,
+       SUM(oi.actual_qty_sqft)                              AS actual_qty,
+       ROUND((SUM(oi.actual_qty_sqft) - SUM(oi.est_qty_sqft))
+             / SUM(oi.est_qty_sqft) * 100, 1)               AS pct_difference,
+       ROUND(SUM((oi.actual_qty_sqft - oi.est_qty_sqft)
+             * oi.unit_price_sqft), 2)                      AS additional_cost
+FROM service_order o
+JOIN order_item oi ON oi.order_id   = o.order_id
+JOIN product p     ON p.product_id  = oi.product_id
+JOIN client c      ON c.client_id   = o.client_id
+WHERE o.status = 'completed' AND oi.actual_qty_sqft IS NOT NULL
+GROUP BY o.order_id, c.first_name, c.last_name, p.product_id, p.product_name
+HAVING SUM(oi.actual_qty_sqft) >= 1.10 * SUM(oi.est_qty_sqft)
+ORDER BY pct_difference DESC"""),
+
+8: dict(title="Overdue Bills",
+        desc="Unpaid (or disputed) bills older than 7 days.",
+        sql="""
+SELECT CONCAT(c.first_name, ' ', c.last_name) AS client,
+       CONCAT(b.bill_id, ' (v', b.version_no, ')') AS bill_number,
+       b.created_at AS bill_date,
+       b.amount_due,
+       b.status,
+       DATEDIFF(NOW(), b.created_at)          AS days_outstanding
+FROM bill b
+JOIN service_order o ON o.order_id  = b.order_id
+JOIN client c        ON c.client_id = o.client_id
+WHERE b.status IN ('unpaid', 'disputed')
+  AND b.created_at < NOW() - INTERVAL 7 DAY
+ORDER BY days_outstanding DESC"""),
+
+9: dict(title="Problem Customers",
+        desc="2+ overdue bills and never paid an overdue bill within 7 days of it going overdue.",
+        sql="""
+WITH overdue AS (
+    SELECT b.bill_id, o.client_id, b.created_at, p.paid_at
+    FROM bill b
+    JOIN service_order o ON o.order_id = b.order_id
+    LEFT JOIN payment p  ON p.bill_id  = b.bill_id
+    WHERE b.status <> 'superseded'
+      AND (   (p.paid_at IS NULL AND b.created_at < NOW() - INTERVAL 7 DAY)
+           OR  p.paid_at > b.created_at + INTERVAL 7 DAY)
+)
+SELECT CONCAT(c.first_name, ' ', c.last_name)                 AS client,
+       c.email,
+       COUNT(*)                                               AS overdue_bills,
+       SUM(od.paid_at IS NULL)                                AS still_unpaid,
+       MAX(DATEDIFF(COALESCE(od.paid_at, NOW()), od.created_at)) AS worst_days_to_pay
+FROM overdue od
+JOIN client c ON c.client_id = od.client_id
+GROUP BY c.client_id, c.first_name, c.last_name, c.email
+HAVING COUNT(*) >= 2
+   AND SUM(od.paid_at IS NOT NULL
+           AND od.paid_at <= od.created_at + INTERVAL 14 DAY) = 0
+ORDER BY overdue_bills DESC"""),
+
+10: dict(title="Excellent Customers",
+         desc="Clients who paid every bill within 24 hours (at least one paid bill).",
+         sql="""
+SELECT CONCAT(c.first_name, ' ', c.last_name)                        AS client,
+       COUNT(p.payment_id)                                           AS bills_paid,
+       SUM(p.amount)                                                 AS total_paid,
+       ROUND(AVG(TIMESTAMPDIFF(MINUTE, b.created_at, p.paid_at)) / 60, 1) AS avg_hours_to_pay
+FROM client c
+JOIN service_order o ON o.client_id = c.client_id
+JOIN bill b          ON b.order_id  = o.order_id AND b.status <> 'superseded'
+LEFT JOIN payment p  ON p.bill_id   = b.bill_id
+GROUP BY c.client_id, c.first_name, c.last_name
+HAVING COUNT(p.payment_id) >= 1
+   AND SUM( (p.paid_at IS NOT NULL AND p.paid_at > b.created_at + INTERVAL 24 HOUR)
+         OR (p.paid_at IS NULL     AND b.created_at < NOW() - INTERVAL 24 HOUR) ) = 0
+ORDER BY avg_hours_to_pay"""),
+}

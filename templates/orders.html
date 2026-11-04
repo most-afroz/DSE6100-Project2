@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Orders</h1>
+<table><tr><th>Order</th><th>Client</th><th>Area</th><th>Agreed</th><th>Scheduled</th><th>Completed</th><th>Status</th><th>Bill</th><th></th></tr>
+{% for o in rows %}<tr><td>#{{ o.order_id }}</td><td>{{ o.client_name }}</td><td>{{ o.sqft }} sq ft</td><td>{{ o.agreed_price|usd }}</td>
+<td>{{ o.scheduled_start }}</td><td>{{ o.completion_date or '-' }}</td><td><span class="tag {{ o.status }}">{{ o.status.replace('_',' ') }}</span></td>
+<td>{% if o.bill_id %}<a href="{{ url_for('bill_view', bid=o.bill_id) }}">{{ o.bill_status }}</a>{% else %}-{% endif %}</td>
+<td><a href="{{ url_for('order_view', oid=o.order_id) }}">Open</a></td></tr>{% endfor %}
+</table>
+{% endblock %}

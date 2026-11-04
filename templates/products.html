@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Flooring products</h1>
+<table>
+<tr><th>Product</th><th>Category</th><th>Brand</th><th>Style / color</th><th>Size</th><th>Price</th><th>Active</th><th></th></tr>
+{% for p in rows %}
+<tr class="{{ '' if p.is_active else 'off' }}"><td>{{ p.product_name }}</td><td>{{ p.category_name }}</td><td>{{ p.brand }}</td>
+<td>{{ p.material_style or '' }}{% if p.color %} · {{ p.color }}{% endif %}</td>
+<td>{% if p.length_in %}{{ p.length_in|int }}" × {{ p.width_in|int }}"{% endif %}</td>
+<td>{{ p.unit_price|usd }}/{{ p.pricing_unit.replace('_',' ') }}{% if p.sqft_per_unit %} ({{ p.sqft_per_unit }} sq ft){% endif %}</td>
+<td>{{ 'yes' if p.is_active else 'no' }}</td><td><a href="{{ url_for('product_edit', pid=p.product_id) }}">Edit</a></td></tr>
+{% endfor %}
+</table>
+<div class="card">
+<h2>Add product</h2>
+<form method="post">{% include "_product_fields.html" %}<button>Add product</button></form>
+</div>
+{% endblock %}

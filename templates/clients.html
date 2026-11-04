@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Clients</h1>
+<table><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Card</th><th>Registered</th><th>Requests</th></tr>
+{% for c in rows %}<tr><td>{{ c.client_id }}</td><td>{{ c.first_name }} {{ c.last_name }}</td><td>{{ c.email }}</td><td>{{ c.phone }}</td>
+<td>•••• {{ c.card_number[-4:] }}</td><td>{{ c.registered_at.strftime('%b %d, %Y') }}</td><td>{{ c.n_req }}</td></tr>{% endfor %}
+</table>
+{% endblock %}

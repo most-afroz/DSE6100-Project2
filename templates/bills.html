@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>All bills (every version)</h1>
+<table><tr><th>Bill</th><th>Order</th><th>Ver</th><th>Client</th><th>Date</th><th>Amount</th><th>Status</th><th>Days</th><th></th></tr>
+{% for b in rows %}<tr><td>{{ b.bill_id }}</td><td>#{{ b.order_id }}</td><td>v{{ b.version_no }}</td><td>{{ b.client_name }}</td>
+<td>{{ b.created_at.strftime('%b %d, %Y') }}</td><td>{{ b.amount_due|usd }}</td><td><span class="tag {{ b.status }}">{{ b.status }}</span></td>
+<td>{{ b.days }}{{ ' to pay' if b.paid_at else ' open' }}</td><td><a href="{{ url_for('bill_view', bid=b.bill_id) }}">Open</a></td></tr>{% endfor %}
+</table>
+{% endblock %}

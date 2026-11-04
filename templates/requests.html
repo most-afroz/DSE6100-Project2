@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Flooring requests</h1>
+<p>Filter: {% for s in ['','pending','quoted','negotiating','accepted','rejected','cancelled'] %}<a class="{{ 'on' if s==st }}" href="{{ url_for('anna_requests', status=s) }}">{{ s or 'all' }}</a> {% endfor %}</p>
+<table><tr><th>#</th><th>Client</th><th>Submitted</th><th>Rooms</th><th>Area</th><th>Budget</th><th>Quotes</th><th>Status</th><th></th></tr>
+{% for r in rows %}<tr><td>{{ r.request_id }}</td><td>{{ r.client_name }}</td><td>{{ r.created_at.strftime('%b %d, %Y') }}</td><td>{{ r.room_count }}</td>
+<td>{{ r.total_sqft }}</td><td>{{ r.budget|usd }}</td><td>{{ r.n_quotes }}</td><td><span class="tag {{ r.status }}">{{ r.status }}</span></td>
+<td><a href="{{ url_for('request_view', rid=r.request_id) }}">Open</a></td></tr>{% endfor %}
+</table>
+{% endblock %}

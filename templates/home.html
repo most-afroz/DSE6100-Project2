@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="hero">
+  <h1>Floors installed right, quoted clearly.</h1>
+  <p>Register, tell Anna about your rooms, and get an itemized quote you can accept or negotiate online.</p>
+  <p><a class="btn" href="{{ url_for('register') }}">Get started</a> <a class="btn ghost" href="{{ url_for('login') }}">I already have an account</a></p>
+</section>
+<h2>Current catalog</h2>
+<table>
+<tr><th>Product</th><th>Category</th><th>Brand</th><th>Color</th><th>Price</th></tr>
+{% for p in products %}
+<tr><td>{{ p.product_name }}</td><td>{{ p.category_name }}</td><td>{{ p.brand }}</td><td>{{ p.color or '' }}</td>
+<td>{{ p.unit_price|usd }} / {{ p.pricing_unit.replace('_',' ') }}{% if p.sqft_per_unit %} ({{ p.sqft_per_unit }} sq ft){% endif %}</td></tr>
+{% endfor %}
+</table>
+{% endblock %}
