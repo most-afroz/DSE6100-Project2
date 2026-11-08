@@ -1,38 +1,80 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Anna Johnson Flooring{% endblock %}</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}Anna Johnson Flooring{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
-<header>
-  <a class="brand" href="{{ url_for('home') }}">Anna Johnson Flooring</a>
-  <nav>
-  {% if role == 'client' %}
-    <a href="{{ url_for('client_home') }}">My projects</a>
-    <a href="{{ url_for('request_new') }}">New request</a>
-    <span class="who">Hi {{ user_name }}</span><a href="{{ url_for('logout') }}">Log out</a>
-  {% elif role == 'anna' %}
-    <a href="{{ url_for('anna_home') }}">Dashboard</a>
-    <a href="{{ url_for('anna_requests') }}">Requests</a>
-    <a href="{{ url_for('anna_orders') }}">Orders</a>
-    <a href="{{ url_for('anna_bills') }}">Bills</a>
-    <a href="{{ url_for('products') }}">Products</a>
-    <a href="{{ url_for('anna_clients') }}">Clients</a>
-    <a href="{{ url_for('logout') }}">Log out</a>
-  {% else %}
-    <a href="{{ url_for('register') }}">Register</a>
-    <a href="{{ url_for('login') }}">Client login</a>
-    <a href="{{ url_for('anna_login') }}">Anna login</a>
-  {% endif %}
-  </nav>
+
+<header class="site-header">
+    <div class="site-header-inner">
+
+        <a class="brand" href="{{ url_for('home') }}">
+            <span class="brand-mark">AJ</span>
+            <span class="brand-name">
+                Anna Johnson Flooring
+                <small>FLOORING MANAGEMENT</small>
+            </span>
+        </a>
+
+        <nav class="main-nav" aria-label="Main navigation">
+
+            {% if role == 'client' %}
+
+                <div class="nav-links">
+                    <a href="{{ url_for('client_home') }}">My projects</a>
+                    <a href="{{ url_for('request_new') }}">New request</a>
+                </div>
+
+                <div class="nav-account">
+                    <span class="who">Hi {{ user_name }}</span>
+                    <a class="nav-logout" href="{{ url_for('logout') }}">Log out</a>
+                </div>
+
+            {% elif role == 'anna' %}
+
+                <div class="nav-links">
+                    <a href="{{ url_for('anna_home') }}">Dashboard</a>
+                    <a href="{{ url_for('anna_requests') }}">Requests</a>
+                    <a href="{{ url_for('anna_orders') }}">Orders</a>
+                    <a href="{{ url_for('anna_bills') }}">Bills</a>
+                    <a href="{{ url_for('products') }}">Products</a>
+                    <a href="{{ url_for('anna_clients') }}">Clients</a>
+                </div>
+
+                <div class="nav-account">
+                    <a class="nav-logout" href="{{ url_for('logout') }}">Log out</a>
+                </div>
+
+            {% else %}
+
+                <div class="nav-links">
+                    <a href="{{ url_for('register') }}">Register</a>
+                    <a href="{{ url_for('login') }}">Client login</a>
+                    <a href="{{ url_for('anna_login') }}">Anna login</a>
+                </div>
+
+            {% endif %}
+
+        </nav>
+
+    </div>
 </header>
-<main>
-  {% for cat, msg in get_flashed_messages(with_categories=true) %}
-    <div class="flash {{ cat }}">{{ msg }}</div>
-  {% endfor %}
-  {% block body %}{% endblock %}
+
+<main class="site-main">
+
+    {% for cat, msg in get_flashed_messages(with_categories=true) %}
+        <div class="flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+
+    {% block body %}{% endblock %}
+
 </main>
+
 </body>
 </html>
