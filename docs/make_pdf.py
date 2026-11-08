@@ -1,164 +1,1144 @@
-"""Builds docs/Project2.pdf (title, names, video URL, E-R diagram, assumptions, relational schema)."""
-import os
+
+"""
+Builds docs/Project2.pdf.
+
+Includes:
+1. Cover page with both students, Access IDs, and presentation video URL
+2. E-R diagram
+3. Entity definitions and relationship constraints
+4. Relational schema generated from db/schema.sql
+5. Consolidated assumptions, reporting rules, and design decisions
+
+The script reads the existing SQL and diagram files but does not modify them.
+"""
+
+from pathlib import Path
+import re
+import xml.sax.saxutils as xml
+
+from PIL import Image as PILImage
+
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.lib import colors
-from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Preformatted,
-                                Table, TableStyle, KeepTogether)
-from PIL import Image as PILImage
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    PageBreak,
+    Image,
+    Table,
+    TableStyle,
+    KeepTogether,
+)
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
+# ------------------------------------------------------------
+# PATHS AND PROJECT INFORMATION
+# ------------------------------------------------------------
 
-NAME = "YOUR NAME"
-ACCESS_ID = "YOUR ACCESS ID"
-PARTNER = "No Partner"
-VIDEO = "https://PASTE-YOUR-VIDEO-LINK-HERE"
+ROOT = Path(__file__).resolve().parents[1]
+HERE = Path(__file__).resolve().parent
 
-ss = getSampleStyleSheet()
-H1 = ParagraphStyle("h1", parent=ss["Heading1"], fontSize=16, spaceAfter=6, textColor=colors.HexColor("#3b2a1c"))
-H2 = ParagraphStyle("h2", parent=ss["Heading2"], fontSize=12.5, spaceBefore=10, spaceAfter=4, textColor=colors.HexColor("#3b2a1c"))
-B = ParagraphStyle("b", parent=ss["Normal"], fontSize=10, leading=14, spaceAfter=5)
-LI = ParagraphStyle("li", parent=B, leftIndent=14, bulletIndent=4, spaceAfter=3)
-SM = ParagraphStyle("sm", parent=B, fontSize=8.8, leading=11.5)
-CODE = ParagraphStyle("code", fontName="Courier", fontSize=7.2, leading=8.6)
+OUTPUT = ROOT / "docs" / "Project2.pdf"
+DIAGRAM = HERE / "er-chen-layout-v2.png"
+SQL_FILE = ROOT / "db" / "schema.sql"
+
+STUDENTS = [
+    ("Rifah Tasniya", "gx9418"),
+    ("Most Afroz", "ic4104"),
+]
+
+VIDEO_URL = "https://PASTE-YOUR-VIDEO-LINK-HERE"
+
+PAGE_WIDTH, PAGE_HEIGHT = letter
+LEFT_MARGIN = 0.65 * inch
+RIGHT_MARGIN = 0.65 * inch
+TOP_MARGIN = 0.65 * inch
+BOTTOM_MARGIN = 0.65 * inch
+
+# ------------------------------------------------------------
+# VALIDATE REQUIRED FILES
+# ------------------------------------------------------------
+
+for required_file in (DIAGRAM, SQL_FILE):
+    if not required_file.exists():
+        raise FileNotFoundError(
+            f"Required file was not found: {required_file}"
+        )
+
+# ------------------------------------------------------------
+# DOCUMENT STYLES
+# ------------------------------------------------------------
+
+styles = getSampleStyleSheet()
+
+styles.add(ParagraphStyle(
+    name="ProjectTitle",
+    parent=styles["Title"],
+    fontName="Helvetica-Bold",
+    fontSize=23,
+    leading=28,
+    alignment=TA_CENTER,
+    textColor=colors.HexColor("#172B3A"),
+    spaceAfter=8,
+))
+
+styles.add(ParagraphStyle(
+    name="MainHeading",
+    parent=styles["Heading1"],
+    fontName="Helvetica-Bold",
+    fontSize=16,
+    leading=20,
+    textColor=colors.HexColor("#172B3A"),
+    spaceBefore=8,
+    spaceAfter=12,
+))
+
+styles.add(ParagraphStyle(
+    name="SubHeading",
+    parent=styles["Heading2"],
+    fontName="Helvetica-Bold",
+    fontSize=11,
+    leading=14,
+    textColor=colors.HexColor("#28536B"),
+    spaceBefore=9,
+    spaceAfter=5,
+))
+
+styles.add(ParagraphStyle(
+    name="BodyTextCustom",
+    parent=styles["BodyText"],
+    fontName="Helvetica",
+    fontSize=9,
+    leading=13,
+    alignment=TA_LEFT,
+    spaceAfter=6,
+))
+
+styles.add(ParagraphStyle(
+    name="SmallText",
+    parent=styles["BodyText"],
+    fontName="Helvetica",
+    fontSize=8,
+    leading=11,
+    textColor=colors.HexColor("#444444"),
+))
+
+styles.add(ParagraphStyle(
+    name="SchemaText",
+    parent=styles["BodyText"],
+    fontName="Courier",
+    fontSize=7.2,
+    leading=9.5,
+    spaceAfter=4,
+    wordWrap="CJK",
+))
+
+styles.add(ParagraphStyle(
+    name="EntityName",
+    parent=styles["BodyText"],
+    fontName="Helvetica-Bold",
+    fontSize=8.5,
+    leading=11,
+    textColor=colors.HexColor("#172B3A"),
+))
+
+# ------------------------------------------------------------
+# FOOTER
+# ------------------------------------------------------------
+
+def add_footer(canvas, doc):
+    canvas.saveState()
+
+    canvas.setStrokeColor(colors.HexColor("#D5DDE3"))
+    canvas.setLineWidth(0.5)
+    canvas.line(
+        LEFT_MARGIN,
+        0.48 * inch,
+        PAGE_WIDTH - RIGHT_MARGIN,
+        0.48 * inch,
+    )
+
+    canvas.setFont("Helvetica", 7.5)
+    canvas.setFillColor(colors.HexColor("#667580"))
+
+    canvas.drawString(
+        LEFT_MARGIN,
+        0.30 * inch,
+        "DSE 6100 | Project 2",
+    )
+
+    canvas.drawRightString(
+        PAGE_WIDTH - RIGHT_MARGIN,
+        0.30 * inch,
+        f"Page {doc.page}",
+    )
+
+    canvas.restoreState()
+
+
+# ------------------------------------------------------------
+# SQL PARSING FOR THE RELATIONAL SCHEMA
+# Reads db/schema.sql without modifying it.
+# ------------------------------------------------------------
+
+def split_sql_definitions(text):
+    """Split a CREATE TABLE body at commas outside parentheses."""
+    parts = []
+    current = []
+    depth = 0
+    in_single = False
+    in_double = False
+    in_backtick = False
+    escaped = False
+
+    for char in text:
+        if escaped:
+            current.append(char)
+            escaped = False
+            continue
+
+        if char == "\\":
+            current.append(char)
+            escaped = True
+            continue
+
+        if char == "'" and not in_double and not in_backtick:
+            in_single = not in_single
+        elif char == '"' and not in_single and not in_backtick:
+            in_double = not in_double
+        elif char == "`" and not in_single and not in_double:
+            in_backtick = not in_backtick
+        elif not in_single and not in_double and not in_backtick:
+            if char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+            elif char == "," and depth == 0:
+                parts.append("".join(current).strip())
+                current = []
+                continue
+
+        current.append(char)
+
+    if current:
+        parts.append("".join(current).strip())
+
+    return parts
+
+
+def identifiers(text):
+    """Return SQL identifiers from a key or foreign-key definition."""
+    found = re.findall(
+        r"`([^`]+)`|([A-Za-z_][A-Za-z0-9_]*)",
+        text,
+    )
+    return [backtick or plain for backtick, plain in found]
+
+
+def extract_create_tables(sql):
+    """Extract table names, columns, primary keys, and foreign keys."""
+    tables = []
+
+    pattern = re.compile(
+        r"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?"
+        r"`?([A-Za-z_][A-Za-z0-9_]*)`?\s*\(",
+        re.IGNORECASE,
+    )
+
+    for match in pattern.finditer(sql):
+        table_name = match.group(1)
+        opening = match.end() - 1
+
+        depth = 0
+        closing = None
+        in_single = False
+        in_double = False
+        in_backtick = False
+        escaped = False
+
+        for index in range(opening, len(sql)):
+            char = sql[index]
+
+            if escaped:
+                escaped = False
+                continue
+
+            if char == "\\":
+                escaped = True
+                continue
+
+            if char == "'" and not in_double and not in_backtick:
+                in_single = not in_single
+            elif char == '"' and not in_single and not in_backtick:
+                in_double = not in_double
+            elif char == "`" and not in_single and not in_double:
+                in_backtick = not in_backtick
+            elif not in_single and not in_double and not in_backtick:
+                if char == "(":
+                    depth += 1
+                elif char == ")":
+                    depth -= 1
+                    if depth == 0:
+                        closing = index
+                        break
+
+        if closing is None:
+            continue
+
+        body = sql[opening + 1:closing]
+        definitions = split_sql_definitions(body)
+
+        columns = []
+        primary_keys = []
+        foreign_keys = {}
+
+        for definition in definitions:
+
+            # Table-level primary key
+            pk_match = re.search(
+                r"PRIMARY\s+KEY\s*\((.*?)\)",
+                definition,
+                re.IGNORECASE | re.DOTALL,
+            )
+
+            if pk_match:
+                primary_keys.extend(
+                    identifiers(pk_match.group(1))
+                )
+                continue
+
+            # Table-level foreign key
+            fk_match = re.search(
+                r"FOREIGN\s+KEY\s*\((.*?)\)\s*"
+                r"REFERENCES\s+`?([A-Za-z_][A-Za-z0-9_]*)`?\s*"
+                r"\((.*?)\)",
+                definition,
+                re.IGNORECASE | re.DOTALL,
+            )
+
+            if fk_match:
+                local_columns = identifiers(fk_match.group(1))
+                referenced_table = fk_match.group(2)
+
+                for column in local_columns:
+                    foreign_keys[column] = referenced_table
+
+                continue
+
+            if re.match(
+                r"\s*(CONSTRAINT|UNIQUE|CHECK|KEY|INDEX|"
+                r"FULLTEXT|SPATIAL)\b",
+                definition,
+                re.IGNORECASE,
+            ):
+                continue
+
+            # Column definition
+            column_match = re.match(
+                r"\s*`([^`]+)`\s+(.+)",
+                definition,
+                re.DOTALL,
+            )
+
+            if not column_match:
+                column_match = re.match(
+                    r"\s*([A-Za-z_][A-Za-z0-9_]*)\s+(.+)",
+                    definition,
+                    re.DOTALL,
+                )
+
+            if not column_match:
+                continue
+
+            column_name = column_match.group(1)
+            column_definition = column_match.group(2).strip()
+            column_type = column_definition.split()[0]
+
+            columns.append((column_name, column_type))
+
+            # Inline primary key
+            if re.search(
+                r"\bPRIMARY\s+KEY\b",
+                column_definition,
+                re.IGNORECASE,
+            ):
+                primary_keys.append(column_name)
+
+            # Inline foreign key
+            inline_fk = re.search(
+                r"\bREFERENCES\s+`?([A-Za-z_][A-Za-z0-9_]*)`?",
+                column_definition,
+                re.IGNORECASE,
+            )
+
+            if inline_fk:
+                foreign_keys[column_name] = inline_fk.group(1)
+
+        tables.append({
+            "name": table_name,
+            "columns": columns,
+            "primary_keys": primary_keys,
+            "foreign_keys": foreign_keys,
+        })
+
+    return tables
+
+
+def build_relational_schema(sql):
+    """Create a readable relational-schema listing from the SQL DDL."""
+    tables = extract_create_tables(sql)
+    output = []
+
+    for table in tables:
+        output.append(
+            Paragraph(
+                xml.escape(table["name"]),
+                styles["SubHeading"],
+            )
+        )
+
+        entries = []
+
+        for column_name, column_type in table["columns"]:
+            marks = []
+
+            if column_name in table["primary_keys"]:
+                marks.append("PK")
+
+            if column_name in table["foreign_keys"]:
+                target = table["foreign_keys"][column_name]
+                marks.append(f"FK to {target}")
+
+            suffix = f" [{', '.join(marks)}]" if marks else ""
+
+            entries.append(
+                f"{column_name}: {column_type}{suffix}"
+            )
+
+        if entries:
+            output.append(
+                Paragraph(
+                    xml.escape(", ".join(entries)),
+                    styles["SchemaText"],
+                )
+            )
+
+    # Include the derived view separately.
+    if re.search(
+        r"CREATE\s+(?:OR\s+REPLACE\s+)?VIEW\s+`?request_area`?",
+        sql,
+        re.IGNORECASE,
+    ):
+        output.append(
+            Paragraph(
+                "request_area (VIEW)",
+                styles["SubHeading"],
+            )
+        )
+        output.append(
+            Paragraph(
+                "Derived room-area information calculated from the "
+                "request-room data. This is a SQL view, not a separate "
+                "base table.",
+                styles["BodyTextCustom"],
+            )
+        )
+
+    return output
+
+
+# ------------------------------------------------------------
+# ENTITY DEFINITIONS
+# ------------------------------------------------------------
+
+entities = [
+    (
+        "Contractor",
+        "Stores Anna's contractor account and login information. "
+        "The project models one contractor and does not introduce "
+        "separate employee roles."
+    ),
+    (
+        "Client",
+        "Stores client identity, contact information, login credentials, "
+        "and the payment-card fields included for the project."
+    ),
+    (
+        "Product Category",
+        "Groups flooring products into categories."
+    ),
+    (
+        "Product",
+        "Stores flooring product details, including category, brand, "
+        "material style, color, dimensions, pricing unit, and availability."
+    ),
+    (
+        "Flooring Request",
+        "Records a client's flooring project request, service address, "
+        "preferred dates, budget, notes, status, and creation date."
+    ),
+    (
+        "Request Room",
+        "Represents an individual room or area included in a flooring "
+        "request, including its dimensions, selected product, and "
+        "installation requirements."
+    ),
+    (
+        "Request Photo",
+        "Stores uploaded photo information associated with a flooring request."
+    ),
+    (
+        "Quote",
+        "Stores a contractor's proposed price and terms for a request. "
+        "Multiple versions can be retained."
+    ),
+    (
+        "Quote Item",
+        "Stores individual quote components, such as material, labor, "
+        "removal, delivery, or discounts."
+    ),
+    (
+        "Negotiation Message",
+        "Preserves messages exchanged during the request and quote process."
+    ),
+    (
+        "Service Order",
+        "Records the accepted project, including its agreed price, "
+        "service address, schedule, status, and completion information."
+    ),
+    (
+        "Order Item",
+        "Records the rooms and flooring products associated with a service "
+        "order, including installed area and material quantities."
+    ),
+    (
+        "Bill",
+        "Stores an amount due for a service order. Different bill versions "
+        "can be retained."
+    ),
+    (
+        "Bill Item",
+        "Stores individual charges that make up a bill."
+    ),
+    (
+        "Bill Message",
+        "Preserves messages and explanations associated with a bill, "
+        "including disputes."
+    ),
+    (
+        "Payment",
+        "Records a payment associated with a bill, including its amount, "
+        "date, and card's last four digits."
+    ),
+    (
+        "request_area (View)",
+        "Calculates request-level room-area information. It is a derived "
+        "view rather than a separately stored base table."
+    ),
+]
+
+
+# ------------------------------------------------------------
+# RELATIONSHIP CONSTRAINTS
+# ------------------------------------------------------------
+
+relationships = [
+    (
+        "Client and Flooring Request",
+        "One client can submit multiple flooring requests. Each request "
+        "belongs to one client through its client_id foreign key."
+    ),
+    (
+        "Product Category and Product",
+        "One product category can contain multiple products. Each product "
+        "references its category."
+    ),
+    (
+        "Flooring Request and Request Room",
+        "A request can contain multiple rooms. Each room belongs to one "
+        "request. Room names are unique within a request, although the "
+        "same room name can appear in different requests."
+    ),
+    (
+        "Flooring Request and Request Photo",
+        "A request can have multiple photos. Photos are numbered from "
+        "1 through 5, and each request/photo-number combination is unique."
+    ),
+    (
+        "Product and Request Room",
+        "A product can be selected for multiple rooms. Each room references "
+        "one desired flooring product."
+    ),
+    (
+        "Flooring Request and Quote",
+        "A request can have multiple quote versions. Each quote belongs "
+        "to a request, and its version number is unique within that request."
+    ),
+    (
+        "Quote and Quote Item",
+        "A quote can contain multiple line items. Each quote item belongs "
+        "to a quote and can identify the relevant room or product."
+    ),
+    (
+        "Request, Quote, and Negotiation Message",
+        "A request can have multiple negotiation messages. Messages preserve "
+        "the communication history and can be associated with a quote."
+    ),
+    (
+        "Quote and Service Order",
+        "A service order references a quote. The unique quote_id constraint "
+        "allows at most one service order to be created from a particular "
+        "quote."
+    ),
+    (
+        "Service Order and Order Item",
+        "A service order can contain multiple order items. Each order item "
+        "records the room and product associated with the installed work."
+    ),
+    (
+        "Service Order and Bill",
+        "A service order can have multiple bill versions. The combination "
+        "of order_id and version_no prevents duplicate bill versions "
+        "for the same order."
+    ),
+    (
+        "Bill and Bill Item",
+        "A bill can contain multiple line items, allowing its charges "
+        "to be explained individually."
+    ),
+    (
+        "Bill and Bill Message",
+        "A bill can have multiple associated messages, preserving "
+        "communication about the bill or a dispute."
+    ),
+    (
+        "Bill and Payment",
+        "A bill can have at most one payment record because bill_id is "
+        "unique in the payment table. Each payment references one bill."
+    ),
+]
+
+
+# ------------------------------------------------------------
+# CONSOLIDATED ASSUMPTIONS AND DESIGN DECISIONS
+# ------------------------------------------------------------
+
+assumption_sections = [
+    (
+        "1. Clients, Requests, and Rooms",
+        [
+            "A client is identified by an automatically generated "
+            "client_id. Email addresses are unique because email is "
+            "used for login.",
+
+            "A flooring request must contain at least one room as a "
+            "business rule. Each room belongs to exactly one request. "
+            "Room names are unique within a request, so two rooms in "
+            "different requests can both be named Kitchen.",
+
+            "Each room has one desired flooring product. If a client "
+            "wants different flooring products in separate areas of "
+            "the same physical space, those areas are entered separately.",
+
+            "Clients can provide room length and width or enter the "
+            "total square footage directly. Stairs can also be entered "
+            "using their total square footage.",
+        ],
+    ),
+    (
+        "2. Photos, Quotes, and Negotiation",
+        [
+            "Request photos are optional, with a maximum of five per "
+            "request. The photo number range and unique combination "
+            "of request_id and photo_no enforce this limit in the database.",
+
+            "Anna can respond to a request with a full quote, a note, "
+            "or a rejection. Clients can accept, reject, cancel, or "
+            "submit a counterproposal. Counterproposals are stored as "
+            "free text because proposed changes can involve different "
+            "terms, such as product choice, price, or installation date.",
+
+            "Quotes are versioned rather than overwritten. The combination "
+            "of request_id and version_no is unique. Only the newest quote "
+            "is intended to remain open; older versions become superseded. "
+            "The rule about which quote is currently open is handled by "
+            "the application workflow.",
+
+            "A quote can contain multiple line items so material, removal, "
+            "labor, underlayment, trim, stairs, delivery, and discounts "
+            "can be explained separately. Quote-level material_cost, "
+            "labor_cost, other_cost, and total_price provide a summary "
+            "of those costs.",
+        ],
+    ),
+    (
+        "3. Orders, Bills, and Payments",
+        [
+            "Accepting a quote creates a service order. The unique "
+            "quote_id constraint prevents more than one service order "
+            "from referencing the same quote.",
+
+            "The service order preserves the agreed service address "
+            "and price information. These snapshots protect the historical "
+            "agreement if the client's address or a product's current "
+            "price changes later.",
+
+            "Bills are versioned in the same way as quotes. Each order "
+            "can have multiple bill versions, identified by a unique "
+            "order_id and version_no combination. The application manages "
+            "which version is currently active.",
+
+            "The intended payment rule is one full payment per bill "
+            "version, with no partial payments. The unique bill_id "
+            "constraint allows at most one payment record per bill. "
+            "The application must also validate that the payment amount "
+            "matches the amount due.",
+
+            "A disputed bill remains unpaid. It therefore continues "
+            "to qualify for the overdue rules until it is paid.",
+        ],
+    ),
+    (
+        "4. Reporting Rules",
+        [
+            "<b>Overdue bills:</b> A bill is overdue when it has not been "
+            "paid within seven days of its bill date. Superseded bill "
+            "versions are excluded; the calculation uses the version "
+            "the client is currently expected to pay.",
+
+            "<b>Problem customers:</b> A problem customer has at least "
+            "two overdue bills, with none of those overdue bills paid "
+            "within seven days after becoming overdue. This is 14 days "
+            "from the original bill date.",
+
+            "<b>Excellent customers:</b> Every paid bill must have been "
+            "paid within 24 hours. A bill less than 24 hours old does "
+            "not disqualify a customer simply because it has not yet "
+            "been paid. At least one paid bill is required.",
+
+            "<b>Best customers:</b> Rankings use money actually received "
+            "from the payment table, rather than quoted prices. Only "
+            "completed orders are included, and the report displays "
+            "the top ten customers.",
+
+            "<b>Installed square footage:</b> Queries 5 and 6 use the "
+            "floor area of rooms in completed orders. Material quantity "
+            "is different because it includes the waste allowance.",
+
+            "<b>Total project price:</b> Query 5 uses the latest valid "
+            "bill, or the agreed project price when a bill has not "
+            "yet been created.",
+        ],
+    ),
+    (
+        "5. Database and Implementation Decisions",
+        [
+            "<b>Historical records:</b> Quotes, bills, and messages are "
+            "preserved instead of being overwritten. New quote and bill "
+            "versions are stored as new records, while the status of an "
+            "older version can be updated. Messages are stored separately "
+            "with timestamps to preserve communication history.",
+
+            "<b>Waste allowance:</b> Estimated material quantity is "
+            "calculated as area multiplied by (1 + waste percentage). "
+            "For example, a 500-square-foot room with 10% waste requires "
+            "an estimated 550 square feet of material.",
+
+            "<b>Derived request area:</b> Total requested square footage "
+            "is calculated through the request_area view rather than "
+            "stored as a separate request-level value. This avoids "
+            "maintaining a duplicate total that could become inconsistent "
+            "with the individual rooms.",
+
+            "<b>Product records:</b> Products referenced by historical "
+            "quotes are not deleted. Products can instead be marked "
+            "inactive, preserving their historical references.",
+
+            "<b>Referential integrity:</b> Primary keys identify records, "
+            "foreign keys connect related records, and the schema uses "
+            "constraints such as NOT NULL, UNIQUE, CHECK, and referential "
+            "actions where defined. Some workflow rules, such as requiring "
+            "at least one room or allowing only one active quote version, "
+            "must also be checked by the application.",
+
+            "<b>Payment-card information:</b> Card-related fields are "
+            "included for the project demonstration. A production system "
+            "should use a payment processor and securely retain a token "
+            "and limited card details, such as the last four digits, "
+            "rather than storing a full card number.",
+        ],
+    ),
+]
+
+
+# ------------------------------------------------------------
+# REAL-WORLD FLOORING OBSERVATION
+# ------------------------------------------------------------
+
+real_world_observation = (
+    "Flooring materials are sometimes priced by square foot but sold "
+    "in whole boxes. For example, if one box covers 23.64 square feet, "
+    "a project requiring 550 square feet needs 24 boxes rather than "
+    "23.3 boxes. This is why the product design includes pricing_unit "
+    "and sqft_per_unit, allowing box quantities to be rounded up to "
+    "whole units. A 10% waste allowance is used as the default, while "
+    "the contractor can adjust it for installation patterns that "
+    "require more material, such as herringbone or diagonal tile."
+)
+
+
+# ------------------------------------------------------------
+# HELPER FUNCTIONS FOR THE REPORT
+# ------------------------------------------------------------
 
 story = []
-P = lambda t, s=B: story.append(Paragraph(t, s))
-def bullets(items):
-    for t in items:
-        story.append(Paragraph(t, LI, bulletText="•"))
 
-# ---------------------------------------------------------------- page 1
-story.append(Spacer(1, 1.2 * inch))
-story.append(Paragraph("Project 2", ParagraphStyle("t", parent=ss["Title"], fontSize=30, leading=38, spaceAfter=14, textColor=colors.HexColor("#3b2a1c"))))
-story.append(Paragraph("Anna Johnson Flooring: database driven website", ParagraphStyle("st", parent=B, fontSize=13, alignment=1)))
-story.append(Paragraph("DSE 6100 · Fall 2026", ParagraphStyle("st2", parent=B, fontSize=11, alignment=1, textColor=colors.grey)))
-story.append(Spacer(1, 0.5 * inch))
-t = Table([["Student", NAME], ["Access ID", ACCESS_ID], ["Partner", PARTNER], ["Demo video", VIDEO]],
-          colWidths=[1.4 * inch, 4.2 * inch])
-t.setStyle(TableStyle([("FONT", (0, 0), (0, -1), "Helvetica-Bold", 10.5), ("FONT", (1, 0), (1, -1), "Helvetica", 10.5),
-                       ("LINEBELOW", (0, 0), (-1, -1), 0.4, colors.HexColor("#d9d2c5")),
-                       ("BOTTOMPADDING", (0, 0), (-1, -1), 8), ("TOPPADDING", (0, 0), (-1, -1), 8)]))
-story.append(t)
-story.append(Spacer(1, 0.5 * inch))
-P("<b>What is in this file:</b> 1. E-R diagram  2. Assumptions and design decisions  3. Relational schema  "
-  "4. CREATE TABLE statements. The dashboard SQL is in sql.txt and the code, setup scripts and README are in the ZIP.")
-P("<b>Stack:</b> Python 3 + Flask for the website, MySQL 8 (tested on MariaDB 10.11 too), plain HTML/CSS. "
-  "Everything in the demo is done through the website, I only used the MySQL client to load the schema and the demo data.")
+
+def add_paragraph(text, style="BodyTextCustom"):
+    story.append(Paragraph(text, styles[style]))
+
+
+def add_bullets(items):
+    for item in items:
+        story.append(
+            Paragraph(
+                f"• {item}",
+                ParagraphStyle(
+                    "BulletText",
+                    parent=styles["BodyTextCustom"],
+                    leftIndent=14,
+                    firstLineIndent=-9,
+                    spaceAfter=5,
+                ),
+            )
+        )
+
+
+def add_two_column_section(items, left_width=1.55 * inch):
+    """Display entity/relationship names alongside their definitions."""
+    rows = []
+
+    for heading, description in items:
+        rows.append([
+            Paragraph(xml.escape(heading), styles["EntityName"]),
+            Paragraph(
+                xml.escape(description),
+                styles["SmallText"],
+            ),
+        ])
+
+    table = Table(
+        rows,
+        colWidths=[
+            left_width,
+            PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - left_width,
+        ],
+        hAlign="LEFT",
+    )
+
+    table.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LINEBELOW", (0, 0), (-1, -1), 0.35,
+         colors.HexColor("#D5DDE3")),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+
+    story.append(table)
+
+
+# ------------------------------------------------------------
+# CREATE THE PDF
+# ------------------------------------------------------------
+
+doc = SimpleDocTemplate(
+    str(OUTPUT),
+    pagesize=letter,
+    rightMargin=RIGHT_MARGIN,
+    leftMargin=LEFT_MARGIN,
+    topMargin=TOP_MARGIN,
+    bottomMargin=BOTTOM_MARGIN,
+    title="Project 2 - Anna Johnson Flooring",
+    author="Rifah Tasniya and Most Afroz",
+)
+
+# ------------------------------------------------------------
+# 1. COVER
+# ------------------------------------------------------------
+
+story.append(Spacer(1, 0.75 * inch))
+
+story.append(
+    Paragraph(
+        "PROJECT 2",
+        styles["ProjectTitle"],
+    )
+)
+
+story.append(Spacer(1, 0.15 * inch))
+
+story.append(
+    Paragraph(
+        "ANNA JOHNSON FLOORING",
+        ParagraphStyle(
+            "AnnaTitle",
+            parent=styles["ProjectTitle"],
+            fontSize=25,
+            leading=30,
+            spaceAfter=18,
+        ),
+    )
+)
+
+story.append(
+    Paragraph(
+        "DSE 6100 · Fall 2026",
+        ParagraphStyle(
+            "CourseTitle",
+            parent=styles["BodyTextCustom"],
+            alignment=TA_CENTER,
+            fontSize=12,
+            leading=16,
+            textColor=colors.HexColor("#526775"),
+        ),
+    )
+)
+
+story.append(Spacer(1, 0.65 * inch))
+
+student_rows = [[
+    Paragraph("<b>Student</b>", styles["BodyTextCustom"]),
+    Paragraph("<b>Access ID</b>", styles["BodyTextCustom"]),
+]]
+
+for name, access_id in STUDENTS:
+    student_rows.append([
+        Paragraph(xml.escape(name), styles["BodyTextCustom"]),
+        Paragraph(xml.escape(access_id), styles["BodyTextCustom"]),
+    ])
+
+student_table = Table(
+    student_rows,
+    colWidths=[3.5 * inch, 2.0 * inch],
+    hAlign="CENTER",
+)
+
+student_table.setStyle(TableStyle([
+    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#EAF0F4")),
+    ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#172B3A")),
+    ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5DC")),
+    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ("LEFTPADDING", (0, 0), (-1, -1), 12),
+    ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+    ("TOPPADDING", (0, 0), (-1, -1), 9),
+    ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+]))
+
+story.append(student_table)
+story.append(Spacer(1, 0.55 * inch))
+
+story.append(
+    Paragraph(
+        "<b>Presentation video</b>",
+        ParagraphStyle(
+            "VideoLabel",
+            parent=styles["BodyTextCustom"],
+            alignment=TA_CENTER,
+            fontSize=10,
+        ),
+    )
+)
+
+safe_video_url = xml.escape(VIDEO_URL, {'"': "&quot;"})
+
+story.append(
+    Paragraph(
+        f'<link href="{safe_video_url}" color="#28536B">'
+        f"{xml.escape(VIDEO_URL)}</link>",
+        ParagraphStyle(
+            "VideoURL",
+            parent=styles["SmallText"],
+            alignment=TA_CENTER,
+        ),
+    )
+)
+
 story.append(PageBreak())
 
-# ---------------------------------------------------------------- ER
-P("1. E-R Diagram", H1)
-P("Notation follows the course textbook: an arrow from an entity to a relationship is a key constraint (at most one), "
-  "a thick line is total participation (at least one), a thick arrow means exactly one. Weak entities have a thick border "
-  "and their identifying relationship is a double diamond. Underlined attributes are keys or partial keys.", SM)
-w, h = PILImage.open(os.path.join(HERE, "er.png")).size
-maxw, maxh = 7.3 * inch, 8.4 * inch
-scale = min(maxw / w, maxh / h)
-story.append(Image(os.path.join(HERE, "er.png"), width=w * scale, height=h * scale))
+
+# ------------------------------------------------------------
+# 2. E-R DIAGRAM
+# ------------------------------------------------------------
+
+story.append(
+    Paragraph(
+        "2. E-R Diagram",
+        styles["MainHeading"],
+    )
+)
+
+story.append(
+    Paragraph(
+        "The diagram uses Chen notation: rectangles represent entities, "
+        "diamonds represent relationships, and ovals represent attributes. "
+        "Key attributes are underlined, and the diagram uses the applicable "
+        "relationship and participation notation from the course.",
+        styles["BodyTextCustom"],
+    )
+)
+
+story.append(Spacer(1, 0.15 * inch))
+
+image_width, image_height = PILImage.open(DIAGRAM).size
+
+available_width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
+available_height = (
+    PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN - 1.25 * inch
+)
+
+scale = min(
+    available_width / image_width,
+    available_height / image_height,
+)
+
+diagram_image = Image(
+    str(DIAGRAM),
+    width=image_width * scale,
+    height=image_height * scale,
+)
+
+diagram_image.hAlign = "CENTER"
+story.append(diagram_image)
+
 story.append(PageBreak())
 
-# ---------------------------------------------------------------- assumptions
-P("2. Assumptions and Design Decisions", H1)
-P("I wrote down the things the project description left open and how I decided them. Most of these came up while I was "
-  "actually building the pages, not before.")
 
-P("Business assumptions", H2)
-bullets([
-    "There is only one contractor, Anna. She logs in with her own account (table <i>contractor</i>). I did not build employee roles because the description never mentions any.",
-    "A client is identified by an auto generated <i>client_id</i>. Email is UNIQUE because it's what people log in with.",
-    "A request has at least one room. A room belongs to exactly one request, so I made Room a weak entity of Request with room_name as the partial key (you can't have two rooms called \"Kitchen\" in the same request, but you can in different ones).",
-    "Each room picks exactly one desired product. If a client wants two products in one space (like tile plus a carpet runner) they enter it as two areas.",
-    "The client gives length and width, or just the total square feet. Stairs fit here too, the client just types the sq ft.",
-    "Photos are optional, max 5 per request. I enforced the 5 in the schema with photo_no BETWEEN 1 AND 5 and UNIQUE(request_id, photo_no), so even a bug in the code can't add a 6th one.",
-    "Anna answers with a full quote, or a note only, or a rejection. A client answers with accept, a counterproposal (free text) or reject/cancel. The counterproposal is text because the examples in the description (cheaper tile, move the date, I remove the carpet myself) are all different kinds of changes.",
-    "Only the newest quote of a request is \"open\". When Anna sends a new one the older one becomes \"superseded\". Accepting creates exactly one order.",
-    "One bill per order at a time, but it can have many versions. A payment pays one bill version in full (no partial payments). I think partial payments are real life but they were not asked for and they would make the overdue rules much harder to define.",
-    "A disputed bill is still an unpaid bill, so it shows up in the overdue report if it is older than 7 days.",
-])
+# ------------------------------------------------------------
+# 3. ENTITIES AND RELATIONSHIPS
+# ------------------------------------------------------------
 
-P("Rules for the reports", H2)
-bullets([
-    "<b>Overdue</b> means not paid within 7 days of the bill date. Superseded bill versions are ignored, the clock is on the version the client actually has to pay.",
-    "<b>Problem customers</b>: at least 2 overdue bills, and none of the overdue ones was paid within 7 days after becoming overdue (that is, within 14 days of the bill date).",
-    "<b>Excellent customers</b>: every paid bill was paid within 24 hours. A brand new bill that is less than 24 hours old and not paid yet doesn't disqualify anyone, the client still has time. At least one paid bill is required.",
-    "<b>Best customers</b> uses money actually paid (payment table), not the quoted price, and only on completed orders. I show the top 10 ranked.",
-    "<b>Installed square footage</b> (queries 5 and 6) is the floor area of the rooms in completed orders. Material quantity (query 7) is a different thing, it includes the waste.",
-    "<b>Total project price</b> in query 5 is the latest valid bill, or the agreed price if there is no bill yet.",
-])
+story.append(
+    Paragraph(
+        "3. Entities and Relationships",
+        styles["MainHeading"],
+    )
+)
 
-P("Important design decisions", H2)
-bullets([
-    "<b>Nothing gets overwritten.</b> Quotes and bills are versioned with (request_id, version_no) and (order_id, version_no), both UNIQUE. A new version is always a new row. The only thing that changes on an old row is its status. Every message (counterproposal, dispute, explanation) is its own row with a timestamp. This was the most important requirement for me because the description says these records may be needed in a disagreement.",
-    "<b>Line items.</b> Quotes and bills have item tables so the totals can be explained line by line (material, removal, labor, underlayment, trim, stairs, delivery, discount). I also kept material_cost, labor_cost, other_cost and total_price on the quote itself and added CHECK (total_price = material_cost + labor_cost + other_cost) so the header can't disagree with itself.",
-    "<b>Waste factor.</b> Estimated quantity = area x (1 + waste%). For a 500 sq ft room with 10% waste that is 550 sq ft, same as the example in the description.",
-    "<b>Snapshots in the order.</b> The order copies the service address, agreed price and the price per sq ft for each product. If Anna changes a product price next month, the old agreement still shows what was agreed. Order also stores client_id, which is technically derivable through quote and request, but I kept it for simpler queries and because the description says the order should preserve the client.",
-    "<b>Derived total area.</b> The total requested sq ft is computed with the view <i>request_area</i> instead of a stored column, so it can never get out of sync with the rooms.",
-    "<b>Products are hidden, not deleted.</b> Old quotes point to them (ON DELETE RESTRICT), so Anna can only mark a product inactive.",
-    "<b>Credit card.</b> I store the card number because the project asks for it and payment uses the registered card. In a real system I would never do this, it would go to a payment processor and I would only keep a token and the last 4 digits. The payment table already only keeps the last 4.",
-])
+story.append(
+    Paragraph(
+        "The following descriptions summarize the purpose of each "
+        "entity and the main constraints governing how the records "
+        "are related.",
+        styles["BodyTextCustom"],
+    )
+)
 
-P("A real world observation", H2)
-P("When I was looking at vinyl plank at a home improvement store, the price tag was per square foot but you could only buy it "
-  "by the box, and one box covered something odd like 23.64 sq ft. So if you need 550 sq ft you actually buy 24 boxes, not 23.3. "
-  "That's why my product table has pricing_unit and sqft_per_unit, and the quote rounds box products up to whole boxes. "
-  "I also noticed most installers I talked to just say \"add 10 percent\", so I made 10% the default waste, but Anna can change it per quote "
-  "(herringbone and diagonal tile usually need more like 15%).")
+story.append(
+    Paragraph(
+        "Entity Definitions",
+        styles["SubHeading"],
+    )
+)
+
+add_two_column_section(entities)
+
+story.append(Spacer(1, 0.12 * inch))
+
+story.append(
+    Paragraph(
+        "Relationship Constraints",
+        styles["SubHeading"],
+    )
+)
+
+add_two_column_section(
+    relationships,
+    left_width=1.75 * inch,
+)
+
 story.append(PageBreak())
 
-# ---------------------------------------------------------------- relational schema
-P("3. Relational Schema", H1)
-P("Primary keys are underlined, foreign keys are in italics with the table they reference.", SM)
-rels = [
-    ("contractor", "<u>contractor_id</u>, username (UNIQUE), password_hash, full_name"),
-    ("client", "<u>client_id</u>, first_name, last_name, address, phone, email (UNIQUE), password_hash, card_holder, card_number, card_exp_month, card_exp_year, registered_at"),
-    ("product_category", "<u>category_id</u>, category_name (UNIQUE)"),
-    ("product", "<u>product_id</u>, <i>category_id</i> → product_category, product_name, brand, material_style, color, unit_price, pricing_unit, length_in, width_in, sqft_per_unit, description, is_active; UNIQUE(product_name, brand)"),
-    ("flooring_request", "<u>request_id</u>, <i>client_id</i> → client, service_address, pref_start_date, pref_end_date, budget, note, status, created_at"),
-    ("request_room", "<u>room_id</u>, <i>request_id</i> → flooring_request, room_name, room_type, length_ft, width_ft, sqft, <i>product_id</i> → product, current_flooring, removal_required, install_pattern; UNIQUE(request_id, room_name)"),
-    ("request_photo", "<u>photo_id</u>, <i>request_id</i> → flooring_request, photo_no, file_name, uploaded_at; UNIQUE(request_id, photo_no)"),
-    ("request_area (view)", "request_id, total_sqft, room_count"),
-    ("quote", "<u>quote_id</u>, <i>request_id</i> → flooring_request, version_no, created_at, waste_pct, material_cost, labor_cost, other_cost, total_price, proposed_start, proposed_end, note, status, decided_at; UNIQUE(request_id, version_no)"),
-    ("quote_item", "<u>quote_item_id</u>, <i>quote_id</i> → quote, item_type, <i>room_id</i> → request_room, <i>product_id</i> → product, description, area_sqft, quantity, unit, unit_price, amount"),
-    ("negotiation_message", "<u>message_id</u>, <i>request_id</i> → flooring_request, <i>quote_id</i> → quote, sender, msg_type, message, created_at"),
-    ("service_order", "<u>order_id</u>, <i>quote_id</i> → quote (UNIQUE), <i>client_id</i> → client, service_address, agreed_price, scheduled_start, scheduled_end, status, created_at, actual_install_date, completion_date, completion_note"),
-    ("order_item", "<u>order_item_id</u>, <i>order_id</i> → service_order, <i>room_id</i> → request_room, <i>product_id</i> → product, installed_sqft, est_qty_sqft, actual_qty_sqft, unit_price_sqft; UNIQUE(order_id, room_id)"),
-    ("bill", "<u>bill_id</u>, <i>order_id</i> → service_order, version_no, created_at, amount_due, note, status; UNIQUE(order_id, version_no)"),
-    ("bill_item", "<u>bill_item_id</u>, <i>bill_id</i> → bill, item_type, description, amount"),
-    ("bill_message", "<u>message_id</u>, <i>bill_id</i> → bill, sender, msg_type, message, created_at"),
-    ("payment", "<u>payment_id</u>, <i>bill_id</i> → bill (UNIQUE), amount, paid_at, card_last4"),
-]
-t = Table([[Paragraph(f"<b>{n}</b>", SM), Paragraph(a, SM)] for n, a in rels], colWidths=[1.45 * inch, 5.85 * inch])
-t.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LINEBELOW", (0, 0), (-1, -1), 0.3, colors.HexColor("#e2ded6")),
-                       ("BOTTOMPADDING", (0, 0), (-1, -1), 4), ("TOPPADDING", (0, 0), (-1, -1), 4)]))
-story.append(t)
-P("Surrogate keys: for the weak entities (rooms, quotes, bills, items) I used an AUTO_INCREMENT id as the primary key to keep "
-  "the foreign keys short, but the real identifying key from the E-R diagram is still enforced with a UNIQUE constraint "
-  "(for example UNIQUE(request_id, version_no) on quote).", SM)
+
+# ------------------------------------------------------------
+# 4. RELATIONAL SCHEMA
+# ------------------------------------------------------------
+
+story.append(
+    Paragraph(
+        "4. Relational Schema",
+        styles["MainHeading"],
+    )
+)
+
+story.append(
+    Paragraph(
+        "The relations below are generated from the project's "
+        "db/schema.sql file. PK identifies primary-key attributes; "
+        "FK identifies foreign-key attributes and their referenced "
+        "tables. The request_area view is identified separately "
+        "because it is derived rather than a base table.",
+        styles["BodyTextCustom"],
+    )
+)
+
+sql_text = SQL_FILE.read_text(encoding="utf-8")
+story.extend(build_relational_schema(sql_text))
+
 story.append(PageBreak())
 
-# ---------------------------------------------------------------- DDL
-P("4. CREATE TABLE Statements", H1)
-P("Same as db/schema.sql in the ZIP.", SM)
-ddl = open(os.path.join(ROOT, "db", "schema.sql")).read()
-for block in ddl.split("\n\n"):
-    story.append(KeepTogether(Preformatted(block.strip("\n"), CODE)))
-    story.append(Spacer(1, 5))
+
+# ------------------------------------------------------------
+# 5. ASSUMPTIONS
+# ------------------------------------------------------------
+
+story.append(
+    Paragraph(
+        "5. Assumptions and Design Decisions",
+        styles["MainHeading"],
+    )
+)
+
+story.append(
+    Paragraph(
+        "The following assumptions explain the business rules behind "
+        "the database and distinguish database-enforced constraints "
+        "from rules managed by the website.",
+        styles["BodyTextCustom"],
+    )
+)
+
+for heading, items in assumption_sections:
+    story.append(
+        Paragraph(
+            xml.escape(heading),
+            styles["SubHeading"],
+        )
+    )
+    add_bullets(items)
+
+story.append(
+    Paragraph(
+        "Real-World Flooring Observation",
+        styles["SubHeading"],
+    )
+)
+
+add_paragraph(xml.escape(real_world_observation))
 
 
-def footer(c, doc):
-    c.saveState()
-    c.setFont("Helvetica", 8)
-    c.setFillColor(colors.grey)
-    c.drawString(0.6 * inch, 0.45 * inch, f"Project 2 · {NAME}")
-    c.drawRightString(letter[0] - 0.6 * inch, 0.45 * inch, f"Page {doc.page}")
-    c.restoreState()
+# ------------------------------------------------------------
+# GENERATE
+# ------------------------------------------------------------
 
+doc.build(
+    story,
+    onFirstPage=add_footer,
+    onLaterPages=add_footer,
+)
 
-doc = SimpleDocTemplate(os.path.join(HERE, "Project2.pdf"), pagesize=letter, leftMargin=0.6 * inch,
-                        rightMargin=0.6 * inch, topMargin=0.6 * inch, bottomMargin=0.7 * inch,
-                        title="Project 2", author=NAME)
-doc.build(story, onFirstPage=footer, onLaterPages=footer)
-print("ok")
+print(f"PDF successfully created: {OUTPUT}")

@@ -1,0 +1,333 @@
+
+graph ER {
+  graph [
+    layout=neato,
+    overlap=false,
+    sep="+12",
+    esep="+6",
+    splines=true,
+    nodesep=0.45,
+    ranksep=0.65,
+    fontname="Helvetica",
+    pad=0.4,
+    bgcolor="white"
+  ];
+
+  node [fontname="Helvetica", fontsize=9];
+  edge [fontname="Helvetica", fontsize=8, penwidth=1];
+
+  // =========================================================
+  // ENTITIES
+  // Underlined attributes are actual SQL primary keys.
+  // FK and UNIQUE annotations identify database constraints.
+  // =========================================================
+
+  node [shape=plaintext];
+
+  Contractor [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#e8eef7">
+    <TR><TD><B>Contractor</B></TD></TR>
+    <TR><TD><U>contractor_id (PK)</U></TD></TR>
+    <TR><TD>username (UNIQUE)</TD></TR>
+    <TR><TD>password_hash</TD></TR>
+    <TR><TD>full_name</TD></TR>
+  </TABLE>>];
+
+  Client [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>Client</B></TD></TR>
+    <TR><TD><U>client_id (PK)</U></TD></TR>
+    <TR><TD>first_name, last_name</TD></TR>
+    <TR><TD>address, phone</TD></TR>
+    <TR><TD>email (UNIQUE)</TD></TR>
+    <TR><TD>password_hash</TD></TR>
+    <TR><TD>card_holder, card_number</TD></TR>
+    <TR><TD>card_exp_month, card_exp_year</TD></TR>
+    <TR><TD>registered_at</TD></TR>
+  </TABLE>>];
+
+  Category [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>ProductCategory</B></TD></TR>
+    <TR><TD><U>category_id (PK)</U></TD></TR>
+    <TR><TD>category_name (UNIQUE)</TD></TR>
+  </TABLE>>];
+
+  Product [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>Product</B></TD></TR>
+    <TR><TD><U>product_id (PK)</U></TD></TR>
+    <TR><TD>category_id (FK)</TD></TR>
+    <TR><TD>product_name, brand</TD></TR>
+    <TR><TD>UNIQUE (product_name, brand)</TD></TR>
+    <TR><TD>material_style, color</TD></TR>
+    <TR><TD>unit_price, pricing_unit</TD></TR>
+    <TR><TD>length_in, width_in</TD></TR>
+    <TR><TD>sqft_per_unit</TD></TR>
+    <TR><TD>description, is_active</TD></TR>
+  </TABLE>>];
+
+  Request [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>FlooringRequest</B></TD></TR>
+    <TR><TD><U>request_id (PK)</U></TD></TR>
+    <TR><TD>client_id (FK)</TD></TR>
+    <TR><TD>service_address</TD></TR>
+    <TR><TD>pref_start_date, pref_end_date</TD></TR>
+    <TR><TD>budget, note, status</TD></TR>
+    <TR><TD>created_at</TD></TR>
+    <TR><TD><I>total_sqft (derived)</I></TD></TR>
+    <TR><TD><I>room_count (derived)</I></TD></TR>
+  </TABLE>>];
+
+  Room [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>RequestRoom</B></TD></TR>
+    <TR><TD><U>room_id (PK)</U></TD></TR>
+    <TR><TD>request_id (FK)</TD></TR>
+    <TR><TD>room_name</TD></TR>
+    <TR><TD>UNIQUE (request_id, room_name)</TD></TR>
+    <TR><TD>room_type</TD></TR>
+    <TR><TD>length_ft, width_ft, sqft</TD></TR>
+    <TR><TD>product_id (FK)</TD></TR>
+    <TR><TD>current_flooring</TD></TR>
+    <TR><TD>removal_required</TD></TR>
+    <TR><TD>install_pattern</TD></TR>
+  </TABLE>>];
+
+  Photo [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>RequestPhoto</B></TD></TR>
+    <TR><TD><U>photo_id (PK)</U></TD></TR>
+    <TR><TD>request_id (FK)</TD></TR>
+    <TR><TD>photo_no</TD></TR>
+    <TR><TD>UNIQUE (request_id, photo_no)</TD></TR>
+    <TR><TD>file_name, uploaded_at</TD></TR>
+  </TABLE>>];
+
+  Quote [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>Quote</B></TD></TR>
+    <TR><TD><U>quote_id (PK)</U></TD></TR>
+    <TR><TD>request_id (FK)</TD></TR>
+    <TR><TD>version_no</TD></TR>
+    <TR><TD>UNIQUE (request_id, version_no)</TD></TR>
+    <TR><TD>created_at, waste_pct</TD></TR>
+    <TR><TD>material_cost, labor_cost</TD></TR>
+    <TR><TD>other_cost, total_price</TD></TR>
+    <TR><TD>proposed_start, proposed_end</TD></TR>
+    <TR><TD>note, status, decided_at</TD></TR>
+  </TABLE>>];
+
+  QItem [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>QuoteItem</B></TD></TR>
+    <TR><TD><U>quote_item_id (PK)</U></TD></TR>
+    <TR><TD>quote_id (FK)</TD></TR>
+    <TR><TD>item_type</TD></TR>
+    <TR><TD>room_id (FK, nullable)</TD></TR>
+    <TR><TD>product_id (FK, nullable)</TD></TR>
+    <TR><TD>description, area_sqft</TD></TR>
+    <TR><TD>quantity, unit</TD></TR>
+    <TR><TD>unit_price, amount</TD></TR>
+  </TABLE>>];
+
+  NMsg [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>NegotiationMessage</B></TD></TR>
+    <TR><TD><U>message_id (PK)</U></TD></TR>
+    <TR><TD>request_id (FK)</TD></TR>
+    <TR><TD>quote_id (FK, nullable)</TD></TR>
+    <TR><TD>sender, msg_type</TD></TR>
+    <TR><TD>message, created_at</TD></TR>
+  </TABLE>>];
+
+  Order [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>ServiceOrder</B></TD></TR>
+    <TR><TD><U>order_id (PK)</U></TD></TR>
+    <TR><TD>quote_id (FK, UNIQUE)</TD></TR>
+    <TR><TD>client_id (FK)</TD></TR>
+    <TR><TD>service_address, agreed_price</TD></TR>
+    <TR><TD>scheduled_start, scheduled_end</TD></TR>
+    <TR><TD>status, created_at</TD></TR>
+    <TR><TD>actual_install_date</TD></TR>
+    <TR><TD>completion_date, completion_note</TD></TR>
+  </TABLE>>];
+
+  OItem [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>OrderItem</B></TD></TR>
+    <TR><TD><U>order_item_id (PK)</U></TD></TR>
+    <TR><TD>order_id (FK)</TD></TR>
+    <TR><TD>room_id (FK)</TD></TR>
+    <TR><TD>product_id (FK)</TD></TR>
+    <TR><TD>installed_sqft</TD></TR>
+    <TR><TD>est_qty_sqft, actual_qty_sqft</TD></TR>
+    <TR><TD>unit_price_sqft</TD></TR>
+    <TR><TD>UNIQUE (order_id, room_id)</TD></TR>
+  </TABLE>>];
+
+  Bill [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>Bill</B></TD></TR>
+    <TR><TD><U>bill_id (PK)</U></TD></TR>
+    <TR><TD>order_id (FK)</TD></TR>
+    <TR><TD>version_no</TD></TR>
+    <TR><TD>UNIQUE (order_id, version_no)</TD></TR>
+    <TR><TD>created_at, amount_due</TD></TR>
+    <TR><TD>note, status</TD></TR>
+  </TABLE>>];
+
+  BItem [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>BillItem</B></TD></TR>
+    <TR><TD><U>bill_item_id (PK)</U></TD></TR>
+    <TR><TD>bill_id (FK)</TD></TR>
+    <TR><TD>item_type, description</TD></TR>
+    <TR><TD>amount</TD></TR>
+  </TABLE>>];
+
+  BMsg [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>BillMessage</B></TD></TR>
+    <TR><TD><U>message_id (PK)</U></TD></TR>
+    <TR><TD>bill_id (FK)</TD></TR>
+    <TR><TD>sender, msg_type</TD></TR>
+    <TR><TD>message, created_at</TD></TR>
+  </TABLE>>];
+
+  Payment [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" BGCOLOR="#fdf6ec">
+    <TR><TD><B>Payment</B></TD></TR>
+    <TR><TD><U>payment_id (PK)</U></TD></TR>
+    <TR><TD>bill_id (FK, UNIQUE)</TD></TR>
+    <TR><TD>amount, paid_at</TD></TR>
+    <TR><TD>card_last4</TD></TR>
+  </TABLE>>];
+
+  // =========================================================
+  // RELATIONSHIPS
+  // Arrow: key constraint (at most one relationship instance).
+  // Thick line: total participation (at least one).
+  // Thick arrow: exactly one.
+  // =========================================================
+
+  node [
+    shape=diamond,
+    style=filled,
+    fillcolor="#e8eef7",
+    fontsize=8,
+    width=1.0,
+    height=0.55
+  ];
+
+  Submits;
+  BelongsTo [label="Belongs\nTo"];
+  Contains;
+  Wants;
+  HasPhoto [label="Has\nPhoto"];
+  QuotedIn [label="Quoted\nIn"];
+  Itemizes;
+  ForRoom [label="For\nRoom"];
+  OfProduct [label="Of\nProduct"];
+  About;
+  Answers;
+  Becomes;
+  Places [label="Places"];
+  Includes;
+  Installs;
+  Uses;
+  BilledBy [label="Billed\nBy"];
+  Lists;
+  Discusses;
+  PaidBy [label="Paid\nBy"];
+
+  // Client submits requests
+  Client -- Submits;
+  Request -- Submits [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Product belongs to a category
+  Product -- BelongsTo [dir=forward, arrowhead=normal, penwidth=3];
+  Category -- BelongsTo;
+
+  // Request contains rooms
+  Request -- Contains;
+  Room -- Contains [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Each room wants one product
+  Room -- Wants [dir=forward, arrowhead=normal, penwidth=3];
+  Product -- Wants;
+
+  // Request photos
+  Request -- HasPhoto;
+  Photo -- HasPhoto [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Quotes belong to requests
+  Request -- QuotedIn;
+  Quote -- QuotedIn [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Quote line items
+  Quote -- Itemizes;
+  QItem -- Itemizes [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Optional room and product references on quote items
+  QItem -- ForRoom [dir=forward, arrowhead=normal];
+  Room -- ForRoom;
+
+  QItem -- OfProduct [dir=forward, arrowhead=normal];
+  Product -- OfProduct;
+
+  // Negotiation messages
+  NMsg -- About [dir=forward, arrowhead=normal, penwidth=3];
+  Request -- About;
+
+  NMsg -- Answers [dir=forward, arrowhead=normal];
+  Quote -- Answers;
+
+  // An accepted quote can become at most one order
+  Quote -- Becomes;
+  Order -- Becomes [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Client directly owns the service order
+  Client -- Places;
+  Order -- Places [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Order line items
+  Order -- Includes;
+  OItem -- Includes [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Each order item installs one room
+  OItem -- Installs [dir=forward, arrowhead=normal, penwidth=3];
+  Room -- Installs;
+
+  // Each order item uses one product
+  OItem -- Uses [dir=forward, arrowhead=normal, penwidth=3];
+  Product -- Uses;
+
+  // Bills belong to orders
+  Order -- BilledBy;
+  Bill -- BilledBy [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Bill line items
+  Bill -- Lists;
+  BItem -- Lists [dir=forward, arrowhead=normal, penwidth=3];
+
+  // Bill discussion messages
+  Bill -- Discusses;
+  BMsg -- Discusses [dir=forward, arrowhead=normal, penwidth=3];
+
+  // A bill can have zero or one payment
+  Bill -- PaidBy [dir=forward, arrowhead=normal];
+  Payment -- PaidBy [dir=forward, arrowhead=normal, penwidth=3];
+
+  // =========================================================
+  // NOTES AND LEGEND
+  // =========================================================
+
+  node [shape=note, style=filled, fillcolor="#f5f7fa", fontsize=8];
+
+  ContractorNote [label="Contractor is an independent login entity.\nThe current schema defines no foreign keys\nconnecting contractor to other tables."];
+
+  ViewNote [label="request_area is a SQL VIEW, not a table.\nIt derives total_sqft and room_count\nfrom request_room."];
+
+  Legend [shape=plaintext, style="", fillcolor="white",
+    label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="2" CELLPADDING="3" BGCOLOR="white">
+      <TR><TD COLSPAN="1"><B>Notation</B></TD></TR>
+      <TR><TD ALIGN="LEFT">Underlined attribute = actual SQL primary key</TD></TR>
+      <TR><TD ALIGN="LEFT">FK = foreign key</TD></TR>
+      <TR><TD ALIGN="LEFT">UNIQUE = unique constraint</TD></TR>
+      <TR><TD ALIGN="LEFT">Arrow E → R = key constraint</TD></TR>
+      <TR><TD ALIGN="LEFT">Thick line = total participation</TD></TR>
+      <TR><TD ALIGN="LEFT">Thick arrow = exactly one</TD></TR>
+      <TR><TD ALIGN="LEFT">Italic attribute = derived value</TD></TR>
+    </TABLE>>];
+
+  Contractor -- ContractorNote [style=dotted, arrowhead=none];
+  Request -- ViewNote [style=dotted, arrowhead=none];
+
+}

@@ -1,0 +1,466 @@
+digraph ER {
+    graph [
+        layout=neato,
+        inputscale=72,
+        splines=line,
+        outputorder=edgesfirst,
+        pad=0.15,
+        margin=0,
+        bgcolor="white",
+        fontname="Helvetica",
+        fontsize=18,
+        labelloc="t",
+        label="ANNA JOHNSON FLOORING — CHEN E-R DIAGRAM\n\nMost Afroz — Access ID: ic4104\nRifah Tasniya — Access ID: gx9418",
+        size="16.5,10.5!"
+    ];
+
+    node [fontname="Helvetica", fontsize=7, margin=0.05];
+    edge [fontname="Helvetica", fontsize=7, color="#8995A3"];
+
+    // ==========================================
+    // ENTITIES (each placed in a 4 x 4 grid)
+    // ==========================================
+
+    node [
+        shape=box,
+        style=filled,
+        fillcolor="#DCE8F5",
+        color="#35465C",
+        penwidth=1.4,
+        fontsize=9,
+        width=1.8,
+        height=0.39,
+        fixedsize=true
+    ];
+
+    Contractor [label="CONTRACTOR", pos="1748,-972!", pin=true];
+    Client [label="CLIENT", pos="619,-81!", pin=true];
+    Category [label="PRODUCT CATEGORY", pos="619,-972!", pin=true];
+    Product [label="PRODUCT", pos="1173,-972!", pin=true];
+    Request [label="FLOORING REQUEST", pos="1173,-81!", pin=true];
+    Room [label="REQUEST ROOM", pos="1173,-675!", pin=true];
+    Photo [label="REQUEST PHOTO", pos="1748,-81!", pin=true];
+    Quote [label="QUOTE", pos="1748,-378!", pin=true];
+    QItem [label="QUOTE ITEM", pos="1748,-675!", pin=true];
+    NMsg [label="NEGOTIATION MESSAGE", pos="1173,-378!", pin=true];
+    Order [label="SERVICE ORDER", pos="619,-378!", pin=true];
+    OItem [label="ORDER ITEM", pos="619,-675!", pin=true];
+    Bill [label="BILL", pos="65,-378!", pin=true];
+    BItem [label="BILL ITEM", pos="65,-972!", pin=true];
+    BMsg [label="BILL MESSAGE", pos="65,-81!", pin=true];
+    Payment [label="PAYMENT", pos="65,-675!", pin=true];
+
+    // ==========================================
+    // RELATIONSHIPS
+    // Colors identify functional connectivity
+    // ==========================================
+
+    node [
+        shape=diamond,
+        style=filled,
+        fontsize=7,
+        width=0.9,
+        height=0.45,
+        fixedsize=true,
+        penwidth=1.2
+    ];
+
+    Submits [label="Submits", fillcolor="#DCEAF8", color="#4776A8", pos="915,-81!", pin=true];
+    Places [label="Places", fillcolor="#DCEAF8", color="#4776A8", pos="619,-217!", pin=true];
+    Contains [label="Contains", fillcolor="#DCEAF8", color="#4776A8", pos="955,-378!", pin=true];
+    HasPhoto [label="Has Photo", fillcolor="#DCEAF8", color="#4776A8", pos="1457,-81!", pin=true];
+    BelongsTo [label="Belongs To", fillcolor="#DDF2ED", color="#3F8275", pos="915,-972!", pin=true];
+    Wants [label="Wants", fillcolor="#DDF2ED", color="#3F8275", pos="1173,-811!", pin=true];
+    ForRoom [label="For Room", fillcolor="#DDF2ED", color="#3F8275", pos="1457,-675!", pin=true];
+    OfProduct [label="Of Product", fillcolor="#DDF2ED", color="#3F8275", pos="1457,-841!", pin=true];
+    Installs [label="Installs", fillcolor="#DDF2ED", color="#3F8275", pos="915,-675!", pin=true];
+    Uses [label="Uses", fillcolor="#DDF2ED", color="#3F8275", pos="915,-841!", pin=true];
+    QuotedIn [label="Quoted In", fillcolor="#EEE5F8", color="#8063A6", pos="1457,-181!", pin=true];
+    Itemizes [label="Itemizes", fillcolor="#EEE5F8", color="#8063A6", pos="1748,-539!", pin=true];
+    Answers [label="Answers", fillcolor="#EEE5F8", color="#8063A6", pos="1457,-378!", pin=true];
+    Becomes [label="Becomes", fillcolor="#EEE5F8", color="#8063A6", pos="885,-253!", pin=true];
+    About [label="About", fillcolor="#F9E4EE", color="#A65D80", pos="1173,-217!", pin=true];
+    Discusses [label="Discusses", fillcolor="#F9E4EE", color="#A65D80", pos="65,-217!", pin=true];
+    Includes [label="Includes", fillcolor="#FCEBD9", color="#B87935", pos="619,-539!", pin=true];
+    BilledBy [label="Billed By", fillcolor="#FCEBD9", color="#B87935", pos="336,-378!", pin=true];
+    Lists [label="Lists", fillcolor="#E5F1DE", color="#63864C", pos="-35,-675!", pin=true];
+    PaidBy [label="Paid By", fillcolor="#E5F1DE", color="#63864C", pos="65,-539!", pin=true];
+
+    // ==========================================
+    // ATTRIBUTES
+    // Regular = lavender, Primary keys = gold, Derived = dashed rose
+    // ==========================================
+
+    node [
+        shape=ellipse,
+        style="solid,filled",
+        fillcolor="#F0E8FA",
+        color="#77628E",
+        fontsize=7,
+        penwidth=0.8,
+        margin="0.03,0.02",
+        height=0.3,
+        width=0.75,
+        fixedsize=false
+    ];
+
+    // CONTRACTOR
+    c_id [label=<<U>contractor_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1895,-953!", pin=true];
+    c_username [label="username (UNIQUE)", pos="1909,-928!", pin=true];
+    c_password [label="password_hash", pos="1899,-991!", pin=true];
+    c_name [label="full_name", pos="1892,-1016!", pin=true];
+    // CLIENT
+    cl_id [label=<<U>client_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="475,-62!", pin=true];
+    cl_first [label="first_name", pos="475,-37!", pin=true];
+    cl_last [label="last_name", pos="475,-12!", pin=true];
+    cl_address [label="address", pos="475,-100!", pin=true];
+    cl_phone [label="phone", pos="475,-125!", pin=true];
+    cl_email [label="email (UNIQUE)", pos="467,-150!", pin=true];
+    cl_password [label="password_hash", pos="769,-62!", pin=true];
+    cl_holder [label="card_holder", pos="763,-37!", pin=true];
+    cl_card [label="card_number", pos="765,-12!", pin=true];
+    cl_month [label="card_exp_month", pos="772,-100!", pin=true];
+    cl_year [label="card_exp_year", pos="768,-125!", pin=true];
+    cl_registered [label="registered_at", pos="765,-150!", pin=true];
+    // PRODUCT CATEGORY
+    cat_id [label=<<U>category_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="763,-953!", pin=true];
+    cat_name [label="category_name (UNIQUE)", pos="790,-991!", pin=true];
+    // PRODUCT
+    p_id [label=<<U>product_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1029,-953!", pin=true];
+    p_category [label="category_id (FK)", pos="1020,-928!", pin=true];
+    p_name [label="product_name", pos="1025,-903!", pin=true];
+    p_brand [label="brand", pos="1029,-878!", pin=true];
+    p_style [label="material_style", pos="1024,-991!", pin=true];
+    p_color [label="color", pos="1029,-1016!", pin=true];
+    p_price [label="unit_price", pos="1029,-1041!", pin=true];
+    p_unit [label="pricing_unit", pos="1317,-953!", pin=true];
+    p_length [label="length_in", pos="1317,-928!", pin=true];
+    p_width [label="width_in", pos="1317,-903!", pin=true];
+    p_coverage [label="sqft_per_unit", pos="1320,-991!", pin=true];
+    p_description [label="description", pos="1317,-1016!", pin=true];
+    p_active [label="is_active", pos="1317,-1041!", pin=true];
+    // QUOTE
+    q_id [label=<<U>quote_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1604,-359!", pin=true];
+    q_request [label="request_id (FK)", pos="1598,-334!", pin=true];
+    q_version [label="version_no", pos="1604,-309!", pin=true];
+    q_created [label="created_at", pos="1604,-284!", pin=true];
+    q_waste [label="waste_pct", pos="1604,-397!", pin=true];
+    q_material [label="material_cost", pos="1601,-422!", pin=true];
+    q_labor [label="labor_cost", pos="1604,-447!", pin=true];
+    q_other [label="other_cost", pos="1892,-359!", pin=true];
+    q_total [label="total_price", pos="1892,-334!", pin=true];
+    q_start [label="proposed_start", pos="1898,-309!", pin=true];
+    q_end [label="proposed_end", pos="1897,-284!", pin=true];
+    q_note [label="note", pos="1892,-397!", pin=true];
+    q_status [label="status", pos="1892,-422!", pin=true];
+    q_decided [label="decided_at", pos="1892,-447!", pin=true];
+    // FLOORING REQUEST
+    r_id [label=<<U>request_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1029,-62!", pin=true];
+    r_client [label="client_id (FK)", pos="1027,-37!", pin=true];
+    r_address [label="service_address", pos="1021,-12!", pin=true];
+    r_start [label="pref_start_date", pos="1023,-100!", pin=true];
+    r_end [label="pref_end_date", pos="1025,-125!", pin=true];
+    r_budget [label="budget", pos="1029,-150!", pin=true];
+    r_note [label="note", pos="1317,-62!", pin=true];
+    r_status [label="status", pos="1317,-37!", pin=true];
+    r_created [label="created_at", pos="1317,-12!", pin=true];
+    r_total [label="total_sqft", style="dashed,filled", fillcolor="#FCE4E4", color="#B76E79", pos="1317,-100!", pin=true];
+    r_count [label="room_count", style="dashed,filled", fillcolor="#FCE4E4", color="#B76E79", pos="1317,-125!", pin=true];
+    // REQUEST ROOM
+    rm_id [label=<<U>room_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1029,-656!", pin=true];
+    rm_request [label="request_id (FK)", pos="1023,-631!", pin=true];
+    rm_name [label="room_name", pos="1029,-606!", pin=true];
+    rm_type [label="room_type", pos="1029,-694!", pin=true];
+    rm_length [label="length_ft", pos="1029,-719!", pin=true];
+    rm_width [label="width_ft", pos="1029,-744!", pin=true];
+    rm_sqft [label="sqft", pos="1317,-656!", pin=true];
+    rm_product [label="product_id (FK)", pos="1324,-631!", pin=true];
+    rm_current [label="current_flooring", pos="1325,-606!", pin=true];
+    rm_removal [label="removal_required", pos="1329,-694!", pin=true];
+    rm_pattern [label="install_pattern", pos="1323,-719!", pin=true];
+    // REQUEST PHOTO
+    ph_id [label=<<U>photo_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1892,-62!", pin=true];
+    ph_request [label="request_id (FK)", pos="1898,-37!", pin=true];
+    ph_number [label="photo_no", pos="1892,-12!", pin=true];
+    ph_file [label="file_name", pos="1892,-100!", pin=true];
+    ph_uploaded [label="uploaded_at", pos="1893,-125!", pin=true];
+    // QUOTE ITEM
+    qi_id [label=<<U>quote_item_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1600,-656!", pin=true];
+    qi_quote [label="quote_id (FK)", pos="1602,-631!", pin=true];
+    qi_type [label="item_type", pos="1604,-606!", pin=true];
+    qi_room [label="room_id (FK, nullable)", pos="1584,-694!", pin=true];
+    qi_product [label="product_id (FK, nullable)", pos="1579,-719!", pin=true];
+    qi_description [label="description", pos="1604,-744!", pin=true];
+    qi_area [label="area_sqft", pos="1892,-656!", pin=true];
+    qi_quantity [label="quantity", pos="1892,-631!", pin=true];
+    qi_unit [label="unit", pos="1892,-606!", pin=true];
+    qi_price [label="unit_price", pos="1892,-694!", pin=true];
+    qi_amount [label="amount", pos="1892,-719!", pin=true];
+    // NEGOTIATION MESSAGE
+    nm_id [label=<<U>message_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1317,-359!", pin=true];
+    nm_request [label="request_id (FK)", pos="1324,-334!", pin=true];
+    nm_quote [label="quote_id (FK, nullable)", pos="1339,-309!", pin=true];
+    nm_sender [label="sender", pos="1317,-284!", pin=true];
+    nm_type [label="msg_type", pos="1317,-397!", pin=true];
+    nm_message [label="message", pos="1317,-422!", pin=true];
+    nm_created [label="created_at", pos="1317,-447!", pin=true];
+    // SERVICE ORDER
+    o_id [label=<<U>order_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="475,-359!", pin=true];
+    o_quote [label="quote_id (FK, UNIQUE)", pos="454,-334!", pin=true];
+    o_client [label="client_id (FK)", pos="472,-309!", pin=true];
+    o_address [label="service_address", pos="466,-397!", pin=true];
+    o_price [label="agreed_price", pos="472,-422!", pin=true];
+    o_start [label="scheduled_start", pos="467,-447!", pin=true];
+    o_end [label="scheduled_end", pos="769,-359!", pin=true];
+    o_status [label="status", pos="763,-334!", pin=true];
+    o_created [label="created_at", pos="763,-309!", pin=true];
+    o_install [label="actual_install_date", pos="777,-397!", pin=true];
+    o_completion [label="completion_date", pos="772,-422!", pin=true];
+    o_note [label="completion_note", pos="772,-447!", pin=true];
+    // ORDER ITEM
+    oi_id [label=<<U>order_item_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="471,-656!", pin=true];
+    oi_order [label="order_id (FK)", pos="473,-631!", pin=true];
+    oi_room [label="room_id (FK)", pos="474,-694!", pin=true];
+    oi_product [label="product_id (FK)", pos="469,-719!", pin=true];
+    oi_installed [label="installed_sqft", pos="765,-656!", pin=true];
+    oi_est [label="est_qty_sqft", pos="763,-631!", pin=true];
+    oi_actual [label="actual_qty_sqft", pos="769,-694!", pin=true];
+    oi_price [label="unit_price_sqft", pos="768,-719!", pin=true];
+    // BILL
+    b_id [label=<<U>bill_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="209,-359!", pin=true];
+    b_order [label="order_id (FK)", pos="211,-334!", pin=true];
+    b_version [label="version_no", pos="209,-309!", pin=true];
+    b_created [label="created_at", pos="209,-284!", pin=true];
+    b_amount [label="amount_due", pos="210,-397!", pin=true];
+    b_note [label="note", pos="209,-422!", pin=true];
+    b_status [label="status", pos="209,-447!", pin=true];
+    // BILL ITEM
+    bi_id [label=<<U>bill_item_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="209,-953!", pin=true];
+    bi_bill [label="bill_id (FK)", pos="209,-928!", pin=true];
+    bi_type [label="item_type", pos="209,-903!", pin=true];
+    bi_description [label="description", pos="209,-991!", pin=true];
+    bi_amount [label="amount", pos="209,-1016!", pin=true];
+    // BILL MESSAGE
+    bm_id [label=<<U>message_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="209,-62!", pin=true];
+    bm_bill [label="bill_id (FK)", pos="209,-37!", pin=true];
+    bm_sender [label="sender", pos="209,-12!", pin=true];
+    bm_type [label="msg_type", pos="209,-100!", pin=true];
+    bm_message [label="message", pos="209,-125!", pin=true];
+    bm_created [label="created_at", pos="209,-150!", pin=true];
+    // PAYMENT
+    pay_id [label=<<U>payment_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="209,-656!", pin=true];
+    pay_bill [label="bill_id (FK, UNIQUE)", pos="224,-631!", pin=true];
+    pay_amount [label="amount", pos="209,-606!", pin=true];
+    pay_date [label="paid_at", pos="209,-694!", pin=true];
+    pay_last4 [label="card_last4", pos="209,-719!", pin=true];
+
+    // ==========================================
+    // RELATIONSHIP CONNECTIONS
+    // ==========================================
+
+    // Blue: client and request flow
+    edge [color="#4776A8", constraint=true, arrowhead=none, penwidth=0.8];
+    Client -> Submits [penwidth=1, dir=back, arrowtail=normal];
+    Request -> Submits [penwidth=3];
+    Client -> Places [penwidth=1, dir=back, arrowtail=normal];
+    Order -> Places [penwidth=3];
+    Request -> w_Contains_Request_0 [penwidth=1, dir=back, arrowtail=normal];
+    w_Contains_Request_0 -> w_Contains_Request_1 [penwidth=1];
+    w_Contains_Request_1 -> Contains [penwidth=1];
+    Room -> w_Contains_Room_0 [penwidth=3];
+    w_Contains_Room_0 -> w_Contains_Room_1 [penwidth=3];
+    w_Contains_Room_1 -> Contains [penwidth=3];
+    Request -> HasPhoto [penwidth=1, dir=back, arrowtail=normal];
+    Photo -> HasPhoto [penwidth=3];
+
+    // Teal: product and room relationships
+    edge [color="#3F8275"];
+    Product -> BelongsTo [penwidth=3];
+    BelongsTo -> Category [penwidth=1, arrowhead=normal];
+    Room -> Wants [penwidth=3];
+    Wants -> Product [penwidth=1, arrowhead=normal];
+    QItem -> ForRoom [penwidth=1];
+    ForRoom -> Room [penwidth=1, arrowhead=normal];
+    QItem -> w_OfProduct_QItem_0 [penwidth=1];
+    w_OfProduct_QItem_0 -> OfProduct [penwidth=1];
+    OfProduct -> w_OfProduct_Product_0 [penwidth=1];
+    w_OfProduct_Product_0 -> Product [penwidth=1, arrowhead=normal];
+    OItem -> Installs [penwidth=3];
+    Installs -> Room [penwidth=1, arrowhead=normal];
+    OItem -> w_Uses_OItem_0 [penwidth=3];
+    w_Uses_OItem_0 -> Uses [penwidth=3];
+    Uses -> w_Uses_Product_0 [penwidth=3];
+    w_Uses_Product_0 -> Product [penwidth=1, arrowhead=normal];
+
+    // Purple: quote workflow
+    edge [color="#8063A6"];
+    Request -> w_QuotedIn_Request_0 [penwidth=1, dir=back, arrowtail=normal];
+    w_QuotedIn_Request_0 -> QuotedIn [penwidth=1];
+    Quote -> w_QuotedIn_Quote_0 [penwidth=3];
+    w_QuotedIn_Quote_0 -> QuotedIn [penwidth=3];
+    Quote -> Itemizes [penwidth=1, dir=back, arrowtail=normal];
+    QItem -> Itemizes [penwidth=3];
+    NMsg -> Answers [penwidth=1];
+    Answers -> Quote [penwidth=1, arrowhead=normal];
+    Quote -> w_Becomes_Quote_0 [penwidth=1, dir=back, arrowtail=normal];
+    w_Becomes_Quote_0 -> Becomes [penwidth=1];
+    Becomes -> w_Becomes_Order_0 [penwidth=1];
+    w_Becomes_Order_0 -> Order [penwidth=3, arrowhead=normal];
+
+    // Pink: communication
+    edge [color="#A65D80"];
+    NMsg -> About [penwidth=3];
+    About -> Request [penwidth=1, arrowhead=normal];
+    Bill -> Discusses [penwidth=1, dir=back, arrowtail=normal];
+    BMsg -> Discusses [penwidth=3];
+
+    // Orange: order and installation flow
+    edge [color="#B87935"];
+    Order -> Includes [penwidth=1, dir=back, arrowtail=normal];
+    OItem -> Includes [penwidth=3];
+    Order -> BilledBy [penwidth=1, dir=back, arrowtail=normal];
+    Bill -> BilledBy [penwidth=3];
+
+    // Green: billing and payment
+    edge [color="#63864C"];
+    Bill -> w_Lists_Bill_0 [penwidth=1, dir=back, arrowtail=normal];
+    w_Lists_Bill_0 -> Lists [penwidth=1];
+    BItem -> w_Lists_BItem_0 [penwidth=3];
+    w_Lists_BItem_0 -> Lists [penwidth=3];
+    Bill -> PaidBy [penwidth=1, dir=back, arrowtail=normal];
+    PaidBy -> Payment [penwidth=3, arrowhead=normal];
+
+    // Invisible bend points used to route edges around other nodes
+    node [shape=point, width=0.01, height=0.01, style=invis, label=""];
+    w_Contains_Request_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="1118,-205!"];
+    w_Contains_Request_1 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="955,-205!"];
+    w_Contains_Room_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="1118,-527!"];
+    w_Contains_Room_1 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="955,-527!"];
+    w_OfProduct_QItem_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="1708,-841!"];
+    w_OfProduct_Product_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="1223,-841!"];
+    w_Uses_OItem_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="659,-841!"];
+    w_Uses_Product_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="1123,-841!"];
+    w_QuotedIn_Request_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="1223,-181!"];
+    w_QuotedIn_Quote_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="1798,-181!"];
+    w_Becomes_Quote_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="1698,-253!"];
+    w_Becomes_Order_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="669,-253!"];
+    w_Lists_Bill_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="-35,-378!"];
+    w_Lists_BItem_0 [shape=point, width=0.01, height=0.01, style=invis, pin=true, label="", pos="-35,-972!"];
+
+    // ==========================================
+    // NOTES AND LEGEND
+    // ==========================================
+
+    node [
+        shape=note,
+        style=filled,
+        fillcolor="#F5F7FA",
+        color="#A0AAB5",
+        fontsize=7,
+        fixedsize=false,
+        width=0.5,
+        height=0.3,
+        margin=0.08
+    ];
+
+    ContractorNote [
+        label="Contractor is an independent login entity.\nNo foreign-key relationships connect it to other tables.",
+        pos="1553,-972!", pin=true
+    ];
+
+    ViewNote [
+        label="request_area is a SQL VIEW, not a table.\nIt derives total_sqft and room_count from request_room.",
+        pos="1173,55!", pin=true
+    ];
+
+    Legend [
+        label="CHEN NOTATION\nRectangle = Entity\nDiamond = Relationship\nOval = Attribute\nUnderlined = Primary key\nDashed oval = Derived attribute\nThin line = Partial participation\nThick line = Total participation\nThin arrow = At most one\nThick arrow = Exactly one",
+        pos="1793,-860!", pin=true
+    ];
+
+    LegendColors [
+        label="CONNECTIVITY COLORS\nBlue = Client / Request\nTeal = Product / Room\nPurple = Quote workflow\nPink = Messages\nOrange = Orders / Installation\nGreen = Billing / Payment",
+        pos="1793,-1070!", pin=true
+    ];
+
+    Contractor -> ContractorNote [style=dotted, color="#8995A3", penwidth=0.7, constraint=false];
+    Request -> ViewNote [style=dotted, color="#8995A3", penwidth=0.7, constraint=false];
+
+    // ==========================================
+    // ATTRIBUTE CONNECTORS
+    // ==========================================
+
+    edge [
+        arrowhead=none,
+        color="#9A8AAE",
+        penwidth=0.65,
+        constraint=false
+    ];
+
+    Contractor -> {c_id c_username c_password c_name};
+
+    Client -> {
+        cl_id cl_first cl_last cl_address cl_phone cl_email
+        cl_password cl_holder cl_card cl_month cl_year cl_registered
+    };
+
+    Category -> {cat_id cat_name};
+
+    Product -> {
+        p_id p_category p_name p_brand p_style p_color
+        p_price p_unit p_length p_width p_coverage p_description
+        p_active
+    };
+
+    Quote -> {
+        q_id q_request q_version q_created q_waste q_material
+        q_labor q_other q_total q_start q_end q_note
+        q_status q_decided
+    };
+
+    Request -> {
+        r_id r_client r_address r_start r_end r_budget
+        r_note r_status r_created r_total r_count
+    };
+
+    Room -> {
+        rm_id rm_request rm_name rm_type rm_length rm_width
+        rm_sqft rm_product rm_current rm_removal rm_pattern
+    };
+
+    Photo -> {ph_id ph_request ph_number ph_file ph_uploaded};
+
+    QItem -> {
+        qi_id qi_quote qi_type qi_room qi_product qi_description
+        qi_area qi_quantity qi_unit qi_price qi_amount
+    };
+
+    NMsg -> {
+        nm_id nm_request nm_quote nm_sender nm_type nm_message
+        nm_created
+    };
+
+    Order -> {
+        o_id o_quote o_client o_address o_price o_start
+        o_end o_status o_created o_install o_completion o_note
+    };
+
+    OItem -> {
+        oi_id oi_order oi_room oi_product oi_installed oi_est
+        oi_actual oi_price
+    };
+
+    Bill -> {
+        b_id b_order b_version b_created b_amount b_note
+        b_status
+    };
+
+    BItem -> {bi_id bi_bill bi_type bi_description bi_amount};
+
+    BMsg -> {
+        bm_id bm_bill bm_sender bm_type bm_message bm_created
+    };
+
+    Payment -> {pay_id pay_bill pay_amount pay_date pay_last4};
+
+}
