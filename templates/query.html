@@ -1,20 +1,130 @@
+
 {% extends "base.html" %}
+
+{% block title %}{{ qd.title }} | Anna Johnson Flooring{% endblock %}
+
 {% block body %}
-<p class="qnav">{% for k, q in queries.items() %}<a class="{{ 'on' if k==n }}" href="{{ url_for('run_query', n=k) }}">{{ k }}</a>{% endfor %}</p>
-<h1>Query {{ n }}: {{ qd.title }}</h1>
-<p class="muted">{{ qd.desc }}</p>
-{% if args %}
-<form class="inline">
-  <label>Month<select name="month">{% for m in range(1,13) %}<option value="{{ m }}" {% if m==args.month %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></label>
-  <label>Year<input type="number" name="year" value="{{ args.year }}" min="2000" max="2100"></label>
-  <button>Run</button>
-</form>
-{% endif %}
-<p><b>{{ rows|length }}</b> row(s)</p>
-{% if rows %}
-<table><tr>{% for c in cols %}<th>{{ c.replace('_',' ') }}</th>{% endfor %}</tr>
-{% for r in rows %}<tr>{% for c in cols %}<td>{% if c in ('total_paid','quoted_amount','total_price','amount_due','additional_cost') %}{{ r[c]|usd }}{% else %}{{ r[c] if r[c] is not none else '-' }}{% endif %}</td>{% endfor %}</tr>{% endfor %}
-</table>
-{% else %}<p class="muted">No rows.</p>{% endif %}
-<details><summary>Show SQL</summary><pre>{{ qd.sql.strip() }}</pre></details>
+
+<section class="report-page">
+
+    <div class="report-page-top">
+        <a class="report-back" href="{{ url_for('anna_home') }}">
+            ← Back to dashboard
+        </a>
+        <span class="report-page-label">BUSINESS INTELLIGENCE</span>
+    </div>
+
+    <div class="report-page-heading">
+        <div>
+            <p class="dashboard-eyebrow">
+                REPORT {{ "%02d"|format(n) }} OF 10
+            </p>
+            <h1>{{ qd.title }}</h1>
+            <p class="muted report-intro">{{ qd.desc }}</p>
+        </div>
+        <span class="report-result-count">
+            {{ rows|length }} result{% if rows|length != 1 %}s{% endif %}
+        </span>
+    </div>
+
+   
+
+    {% if args %}
+    <section class="report-filter-panel">
+        <div>
+            <h2>Report parameters</h2>
+            <p class="muted">Choose the month and year for this sales report.</p>
+        </div>
+
+        <form class="report-filter-form" method="GET">
+            <label>
+                Month
+                <select name="month">
+                    {% for m in range(1,13) %}
+                    <option value="{{ m }}"
+                        {% if m == args.month %}selected{% endif %}>
+                        {{ m }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>
+                Year
+                <input
+                    type="number"
+                    name="year"
+                    value="{{ args.year }}"
+                    min="2000"
+                    max="2100"
+                >
+            </label>
+
+            <button type="submit">Update report</button>
+        </form>
+    </section>
+    {% endif %}
+
+    <section class="report-results-section">
+        <div class="report-results-heading">
+            <div>
+                <p class="dashboard-eyebrow">RESULTS</p>
+                <h2>Report breakdown</h2>
+            </div>
+            <span class="muted">{{ rows|length }} records</span>
+        </div>
+
+        {% if rows %}
+        <div class="report-table-wrapper">
+            <table class="report-results-table">
+                <thead>
+                    <tr>
+                        {% for c in cols %}
+                        <th>{{ c.replace('_', ' ') }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for r in rows %}
+                    <tr>
+                        {% for c in cols %}
+                        <td>
+                            {% if c in (
+                                'total_paid',
+                                'quoted_amount',
+                                'total_price',
+                                'amount_due',
+                                'additional_cost'
+                            ) %}
+                                {{ r[c]|usd }}
+                            {% else %}
+                                {{ r[c] if r[c] is not none else '-' }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="report-no-results">
+            <h3>No results for this report</h3>
+            <p class="muted">
+                No records matched the report criteria.
+                Try another reporting period if parameters are available.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+    <details class="report-sql">
+        <summary>View SQL query</summary>
+        <pre>{{ qd.sql.strip() }}</pre>
+    </details>
+
+</section>
+
 {% endblock %}

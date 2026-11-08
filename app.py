@@ -497,13 +497,96 @@ def bill_respond(bid):
 def anna_home():
     stats = q_one("""SELECT
         (SELECT COUNT(*) FROM client) AS clients,
-        (SELECT COUNT(*) FROM flooring_request WHERE status IN ('pending','negotiating')) AS needs_reply,
-        (SELECT COUNT(*) FROM service_order WHERE status IN ('scheduled','in_progress')) AS active_orders,
-        (SELECT COALESCE(SUM(amount_due),0) FROM bill WHERE status IN ('unpaid','disputed')) AS outstanding""")
-    todo = q_all("""SELECT r.*, CONCAT(c.first_name,' ',c.last_name) AS client_name, ra.total_sqft
-                    FROM flooring_request r JOIN client c USING (client_id) LEFT JOIN request_area ra USING (request_id)
-                    WHERE r.status IN ('pending','negotiating') ORDER BY r.created_at""")
-    return render_template("anna_home.html", stats=stats, todo=todo, queries=QUERIES)
+        (SELECT COUNT(*) FROM flooring_request
+         WHERE status IN ('pending','negotiating')) AS needs_reply,
+        (SELECT COUNT(*) FROM service_order
+         WHERE status IN ('scheduled','in_progress')) AS active_orders,
+        (SELECT COALESCE(SUM(amount_due),0) FROM bill
+         WHERE status IN ('unpaid','disputed')) AS outstanding""")
+
+    todo = q_all("""SELECT r.*, CONCAT(c.first_name,' ',c.last_name) AS client_name,
+                           ra.total_sqft
+                    FROM flooring_request r
+                    JOIN client c USING (client_id)
+                    LEFT JOIN request_area ra USING (request_id)
+                    WHERE r.status IN ('pending','negotiating')
+                    ORDER BY r.created_at""")
+
+    # Chart 1: Requests by status
+    request_status = q_all("""
+        SELECT status, COUNT(*) AS total
+        FROM flooring_request
+        GROUP BY status
+        ORDER BY total DESC
+    """)
+
+    # Chart 2: Monthly requests over the last six months
+    monthly_requests = q_all("""
+        SELECT DATE_FORMAT(created_at, '%b %Y') AS month,
+               YEAR(created_at) AS year_num,
+               MONTH(created_at) AS month_num,
+               COUNT(*) AS total
+        FROM flooring_request
+        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY YEAR(created_at), MONTH(created_at),
+                 DATE_FORMAT(created_at, '%b %Y')
+        ORDER BY year_num, month_num
+    """)
+
+    # Chart 3: Service orders by status
+    order_status = q_all("""
+        SELECT status, COUNT(*) AS total
+        FROM service_order
+        GROUP BY status
+        ORDER BY total DESC
+    """)
+
+    # Chart 4: Monthly revenue from actual payments
+    monthly_revenue = q_all("""
+        WITH RECURSIVE months AS (
+            SELECT DATE_SUB(
+                CAST(DATE_FORMAT(CURDATE(), '%Y-%m-01') AS DATE),
+                INTERVAL 5 MONTH
+            ) AS month_start
+            UNION ALL
+            SELECT DATE_ADD(month_start, INTERVAL 1 MONTH)
+            FROM months
+            WHERE month_start < CAST(DATE_FORMAT(CURDATE(), '%Y-%m-01') AS DATE)
+        ),
+        monthly_payments AS (
+            SELECT
+                CAST(DATE_FORMAT(paid_at, '%Y-%m-01') AS DATE) AS month_start,
+                SUM(amount) AS total
+            FROM payment
+            WHERE paid_at >= DATE_SUB(
+                CAST(DATE_FORMAT(CURDATE(), '%Y-%m-01') AS DATE),
+                INTERVAL 5 MONTH
+            )
+            AND paid_at < DATE_ADD(
+                CAST(DATE_FORMAT(CURDATE(), '%Y-%m-01') AS DATE),
+                INTERVAL 1 MONTH
+            )
+            GROUP BY CAST(DATE_FORMAT(paid_at, '%Y-%m-01') AS DATE)
+        )
+        SELECT
+            DATE_FORMAT(months.month_start, '%b %Y') AS month,
+            COALESCE(monthly_payments.total, 0) AS total
+        FROM months
+        LEFT JOIN monthly_payments
+            ON months.month_start = monthly_payments.month_start
+        ORDER BY months.month_start
+    """)
+
+    return render_template(
+        "anna_home.html",
+        stats=stats,
+        todo=todo,
+        queries=QUERIES,
+        request_status=request_status,
+        monthly_requests=monthly_requests,
+        order_status=order_status,
+        monthly_revenue=monthly_revenue
+    )
 
 
 @app.route("/anna/products", methods=["GET", "POST"])
