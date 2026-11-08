@@ -1,50 +1,421 @@
+
 {% extends "base.html" %}
+
+{% block title %}New Flooring Request | Anna Johnson Flooring{% endblock %}
+
 {% block body %}
-<h1>New flooring request</h1>
-<form method="post" enctype="multipart/form-data">
-<div class="card">
-  <label>Service address<input name="service_address" value="{{ default_address }}" required></label>
-  <div class="row3">
-    <label>Preferred start<input type="date" name="pref_start_date" required></label>
-    <label>Preferred end (optional)<input type="date" name="pref_end_date"></label>
-    <label>Budget ($)<input type="number" step="0.01" min="1" name="budget"></label>
-  </div>
-  <label>Notes<textarea name="note" rows="2" placeholder="e.g. I have two dogs, need waterproof floor in basement"></textarea></label>
+
+<div class="request-page">
+
+    <div class="request-heading">
+        <p class="dashboard-eyebrow">CLIENT PORTAL</p>
+        <h1>New flooring request</h1>
+        <p class="muted">Tell us about your project to receive a personalized flooring quote.</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+
+        <!-- 01: PROJECT DETAILS -->
+
+        <section class="request-section">
+            <div class="request-section-heading">
+                <p class="dashboard-eyebrow">01 / PROJECT</p>
+                <h2>Project details</h2>
+                <p class="muted">Where and when would you like the work completed?</p>
+            </div>
+
+            <div class="card request-details-card">
+
+                <label>
+                    Service address
+                    <input name="service_address" value="{{ default_address }}" required>
+                </label>
+
+                <div class="request-grid request-grid-3">
+                    <label>
+                        Preferred start
+                        <input type="date" name="pref_start_date" required>
+                    </label>
+
+                    <label>
+                        Preferred end <span class="muted">(Optional)</span>
+                        <input type="date" name="pref_end_date">
+                    </label>
+
+                    <label>
+                        Budget <span class="muted">(Optional)</span>
+                        <input type="number" step="0.01" min="1" name="budget" placeholder="$">
+                    </label>
+                </div>
+
+                <label>
+                    Project notes
+                    <textarea name="note" rows="3"
+                        placeholder="Tell Anna about your flooring preferences, pets, or special requirements."></textarea>
+                </label>
+            </div>
+        </section>
+
+
+        <!-- 02: ROOMS AND FLOORING -->
+
+        <section class="request-section">
+            <div class="request-section-heading">
+                <p class="dashboard-eyebrow">02 / FLOORING</p>
+                <h2>Rooms and areas</h2>
+                <p class="muted">Add each room, enter its dimensions, and select your preferred flooring.</p>
+            </div>
+
+            <div id="rooms"></div>
+
+            <button type="button" class="ghost request-add-room" onclick="addRoom()">
+                + Add another room
+            </button>
+
+            <!-- AREA AND COST SUMMARY -->
+
+            <div class="request-summary-grid">
+
+                <div class="area-summary">
+                    <p class="area-summary-label">TOTAL REQUESTED AREA</p>
+                    <div class="area-summary-value">
+                        <strong id="tot">0.00</strong>
+                        <span>sq ft</span>
+                    </div>
+                </div>
+
+                <div class="material-estimate">
+                    <p class="area-summary-label">ESTIMATED MATERIAL COST</p>
+                    <h2 id="materialTotal">$0.00</h2>
+                    <p class="muted">Before waste allowance, labor, removal, and other charges.</p>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- 03: PHOTOS -->
+
+        <section class="request-section">
+            <div class="request-section-heading">
+                <p class="dashboard-eyebrow">03 / PHOTOS</p>
+                <h2>Project photos</h2>
+                <p class="muted">Share pictures of your existing flooring or room.</p>
+            </div>
+
+            <div class="card request-photo-card">
+                <label>
+                    Upload photos
+                    <input type="file" name="photos" accept="image/*" multiple
+                        onchange="if(this.files.length>5){alert('Max 5 photos');this.value=''}">
+                </label>
+                <p class="muted">Up to 5 image files.</p>
+            </div>
+        </section>
+
+
+        <!-- SUBMIT -->
+
+        <div class="request-submit">
+            <button type="submit">Submit flooring request</button>
+            <p class="muted">Review your room details and estimates before submitting.</p>
+        </div>
+
+    </form>
 </div>
-<h2>Rooms / areas</h2>
-<p class="muted">Give length and width in feet, or just the total square feet.</p>
-<div id="rooms"></div>
-<button type="button" class="ghost" onclick="addRoom()">+ Add another room</button>
-<p class="total">Total requested area: <b id="tot">0</b> sq ft</p>
-<div class="card">
-  <label>Photos (up to 5)<input type="file" name="photos" accept="image/*" multiple onchange="if(this.files.length>5){alert('Max 5 photos');this.value=''}"></label>
-</div>
-<button>Submit request</button>
-</form>
+
+
+<!-- ROOM TEMPLATE -->
 
 <template id="roomTpl">
-<div class="card room">
-  <div class="row3">
-    <label>Room name<input name="room_name" placeholder="Living room" required></label>
-    <label>Type<select name="room_type">{% for t in room_types %}<option>{{ t }}</option>{% endfor %}</select></label>
-    <label>Flooring wanted<select name="product_id">{% for p in products %}<option value="{{ p.product_id }}">{{ p.category_name }}: {{ p.product_name }} ({{ p.unit_price|usd }}/{{ p.pricing_unit.replace('_',' ') }})</option>{% endfor %}</select></label>
-  </div>
-  <div class="row4">
-    <label>Length (ft)<input type="number" step="0.01" min="0" name="length" oninput="calc()"></label>
-    <label>Width (ft)<input type="number" step="0.01" min="0" name="width" oninput="calc()"></label>
-    <label>or total sq ft<input type="number" step="0.01" min="0" name="sqft" oninput="calc()"></label>
-    <label>Current floor<input name="current" placeholder="carpet, tile, none"></label>
-  </div>
-  <div class="row3">
-    <label>Remove old floor?<select name="removal"><option value="0">No</option><option value="1">Yes</option></select></label>
-    <label>Pattern<select name="pattern">{% for p in patterns %}<option>{{ p }}</option>{% endfor %}</select></label>
-    <label>&nbsp;<button type="button" class="ghost small" onclick="this.closest('.room').remove();calc()">Remove room</button></label>
-  </div>
-</div>
+
+    <div class="card room request-room-card">
+
+        <div class="request-room-heading">
+            <h3>Room / area</h3>
+        </div>
+
+
+        <!-- ROW 1: ROOM DETAILS AND FLOORING -->
+
+        <div class="request-grid request-grid-3">
+
+            <label>
+                Room name
+                <input name="room_name" placeholder="Living room" required>
+            </label>
+
+            <label>
+                Room type
+                <select name="room_type">
+                    {% for t in room_types %}
+                    <option>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <div class="request-product-column">
+
+                <label>
+                    Flooring wanted
+                    <select name="product_id"
+                        onchange="calc(); updateMaterialPreview(this)">
+                        {% for p in products %}
+                        <option
+                            value="{{ p.product_id }}"
+                            data-price="{{ p.unit_price }}"
+                            data-unit="{{ p.pricing_unit }}"
+                            data-coverage="{{ p.sqft_per_unit or 1 }}"
+                            data-name="{{ p.product_name }}"
+                            data-category="{{ p.category_name|lower }}">
+                            {{ p.product_name }} ({{ p.unit_price|usd }}/{{ p.pricing_unit.replace('_',' ') }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <!-- REPRESENTATIVE TEXTURE SAMPLES -->
+
+                <div class="material-preview">
+
+                    <div class="texture-samples oak-texture"
+                         data-material-texture>
+                        <span class="texture-swatch sample-one"></span>
+                        <span class="texture-swatch sample-two"></span>
+                        <span class="texture-swatch sample-three"></span>
+                    </div>
+
+                    <div class="material-preview-info">
+                        <strong data-material-name></strong>
+                        <span data-material-price></span>
+                        <small>Representative color and texture samples. Actual appearance may vary.</small>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ROW 2: DIMENSIONS -->
+
+        <div class="request-grid request-grid-4">
+
+            <label>
+                Length (ft)
+                <input type="number" step="0.01" min="0"
+                    name="length" oninput="calc()">
+            </label>
+
+            <label>
+                Width (ft)
+                <input type="number" step="0.01" min="0"
+                    name="width" oninput="calc()">
+            </label>
+
+            <label>
+                Total sq ft
+                <input type="number" step="0.01" min="0"
+                    name="sqft" oninput="calc()">
+            </label>
+
+            <label>
+                Current floor
+                <input name="current" placeholder="Carpet, tile, none">
+            </label>
+
+        </div>
+
+
+        <!-- ROW 3: ADDITIONAL OPTIONS -->
+
+        <div class="request-grid request-grid-3">
+
+            <label>
+                Remove old floor?
+                <select name="removal">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </label>
+
+            <label>
+                Pattern
+                <select name="pattern">
+                    {% for p in patterns %}
+                    <option>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <div class="request-room-action">
+                <button type="button" class="ghost small"
+                    onclick="this.closest('.room').remove();calc()">
+                    Remove room
+                </button>
+            </div>
+
+        </div>
+
+
+        <!-- ROOM ESTIMATE -->
+
+        <div class="room-estimate">
+            <span>Estimated material cost:</span>
+            <strong class="room-cost">$0.00</strong>
+        </div>
+
+    </div>
+
 </template>
+
+
+<!-- PREVIEW AND PRICE CALCULATIONS -->
+
 <script>
-function addRoom(){document.getElementById('rooms').appendChild(document.getElementById('roomTpl').content.cloneNode(true));}
-function calc(){let t=0;document.querySelectorAll('.room').forEach(r=>{const l=+r.querySelector('[name=length]').value,w=+r.querySelector('[name=width]').value,s=+r.querySelector('[name=sqft]').value;t+=(l&&w)?l*w:s;});document.getElementById('tot').textContent=t.toFixed(2);}
+
+function formatMoney(value) {
+    return value.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD'
+    });
+}
+
+
+function updateMaterialPreview(select) {
+
+    const room = select.closest('.room');
+    const option = select.selectedOptions[0];
+
+    const name = option.dataset.name;
+    const price = Number(option.dataset.price);
+    const unit = option.dataset.unit;
+
+    const category = (
+        option.dataset.category + ' ' + name
+    ).toLowerCase();
+
+    const texture = room.querySelector('[data-material-texture]');
+
+    let textureClass = 'oak-texture';
+
+    if (category.includes('berber')) {
+        textureClass = 'berber-texture';
+
+    } else if (category.includes('plush')) {
+        textureClass = 'plush-texture';
+
+    } else if (category.includes('marble')) {
+        textureClass = 'marble-texture';
+
+      } else if (category.includes('porcelain')) {
+        textureClass = 'porcelain-texture';
+
+    } else if (category.includes('ceramic')) {
+        textureClass = 'ceramic-texture';
+
+    } else if (category.includes('tile')) {
+        textureClass = 'ceramic-texture';
+
+    } else if (
+        category.includes('hickory') ||
+        category.includes('engineered')
+    ) {
+        textureClass = 'hickory-texture';
+
+    } else if (category.includes('maple')) {
+        textureClass = 'maple-texture';
+
+    } else if (category.includes('vinyl') || category.includes('lvp')) {
+        textureClass = 'vinyl-texture';
+
+    } else if (category.includes('laminate')) {
+        textureClass = 'laminate-texture';
+
+    } else if (category.includes('carpet')) {
+        textureClass = 'carpet-texture';
+
+    } else if (category.includes('oak')) {
+        textureClass = 'oak-texture';
+    }
+
+    texture.className = 'texture-samples ' + textureClass;
+
+    room.querySelector('[data-material-name]').textContent = name;
+
+    room.querySelector('[data-material-price]').textContent =
+        formatMoney(price) + ' / ' + unit.replace('_', ' ');
+}
+
+
+function addRoom() {
+
+    const template = document.getElementById('roomTpl');
+
+    document.getElementById('rooms')
+        .appendChild(template.content.cloneNode(true));
+
+    const rooms = document.querySelectorAll('.room');
+    const newRoom = rooms[rooms.length - 1];
+
+    updateMaterialPreview(
+        newRoom.querySelector('[name=product_id]')
+    );
+
+    calc();
+}
+
+
+function calc() {
+
+    let totalArea = 0;
+    let totalCost = 0;
+
+    document.querySelectorAll('.room').forEach(room => {
+
+        const length = Number(room.querySelector('[name=length]').value);
+        const width = Number(room.querySelector('[name=width]').value);
+        const enteredSqft = Number(room.querySelector('[name=sqft]').value);
+
+        const area = (length > 0 && width > 0)
+            ? length * width
+            : enteredSqft;
+
+        totalArea += area;
+
+        const product = room.querySelector('[name=product_id]').selectedOptions[0];
+
+        const price = Number(product.dataset.price);
+        const unit = product.dataset.unit;
+        const coverage = Number(product.dataset.coverage);
+
+        let roomCost = 0;
+
+        if (area > 0 && price >= 0) {
+
+            if (unit === 'sq_ft') {
+                roomCost = area * price;
+            } else {
+                roomCost = Math.ceil(area / coverage) * price;
+            }
+        }
+
+        totalCost += roomCost;
+
+        room.querySelector('.room-cost').textContent =
+            formatMoney(roomCost);
+    });
+
+    document.getElementById('tot').textContent =
+        totalArea.toFixed(2);
+
+    document.getElementById('materialTotal').textContent =
+        formatMoney(totalCost);
+}
+
 addRoom();
+
 </script>
+
 {% endblock %}
