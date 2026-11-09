@@ -17,14 +17,14 @@ This is a small web app for Anna Johnson's flooring business. Clients register, 
 
 The project was developed and tested using the following tools:
 
-- macOS (MacBook Pro) and Linux
+- Windows 11 (XAMPP MariaDB), macOS (MacBook Pro) and Linux
 - XAMPP for local MySQL database management
 - Anaconda for Python environment and package management
 - MacPorts Graphviz for generating the E-R diagram
 - Visual Studio Code for editing and project development
 - A PDF viewer extension in Visual Studio Code for viewing PDF files
 
-Python packages are listed in `requirements.txt` (Flask, PyMySQL, Werkzeug, ReportLab, and Pillow). ReportLab and Pillow are also used by the project PDF-generation script.
+Python packages are listed in `requirements.txt` (Flask, PyMySQL, Werkzeug, cryptography, ReportLab, and Pillow). `cryptography` lets PyMySQL log in to MySQL 8, which uses `caching_sha2_password` by default. ReportLab and Pillow are only used by the PDF-generation script.
 
 ## 2. Install
 
@@ -61,8 +61,16 @@ GRANT ALL ON flooring.* TO 'flooring_app'@'localhost';
 Then build the tables and load the demo data:
 
 ```bash
+# Mac/Linux (Terminal)
 mysql -u root -p < db/schema.sql
 mysql -u root -p < db/seed.sql
+```
+
+```powershell
+# Windows PowerShell ("<" does not work in PowerShell). With XAMPP, mysql.exe is in C:\xampp\mysql\bin
+# and root has no password by default, so leave out -p:
+Get-Content db\schema.sql | & "C:\xampp\mysql\bin\mysql.exe" -u root
+Get-Content db\seed.sql | & "C:\xampp\mysql\bin\mysql.exe" -u root
 ```
 
 The schema script drops and recreates the database `flooring`. The seed script loads the demo clients, quotes, orders, bills, and other sample data.
@@ -157,8 +165,9 @@ docs/backup/                    Original E-R diagram files
 docs/make_pdf.py                Project PDF-generation script
 docs/Project2.pdf               Project report PDF
 templates/                      HTML pages
-static/style.css                Application styling
-uploads/                        Client photos are saved here
+static/style.css                Application styling (flooring textures are drawn in CSS)
+static/vendor/chart.umd.min.js  Chart.js 4.4.1 (MIT license) bundled so dashboard charts work offline
+uploads/                        Client photos are saved here (created automatically on first run)
 ```
 
 ## 7. Contributions
@@ -177,6 +186,5 @@ uploads/                        Client photos are saved here
 - README preparation and review.
 - Collaborative demonstration preparation and recording.
 
---- add vid link to readme and pdf report before final submission ---
 
 **Total time spent working together: 4.5 hours.**

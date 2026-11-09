@@ -242,6 +242,11 @@ def extract_create_tables(sql):
     """Extract table names, columns, primary keys, and foreign keys."""
     tables = []
 
+    # Drop "-- ..." comments first. Words in comments were being read as
+    # columns, and apostrophes in them (e.g. "can't") looked like the start
+    # of a string, which swallowed columns and the whole service_order table.
+    sql = re.sub(r"--[^\n]*", "", sql)
+
     pattern = re.compile(
         r"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?"
         r"`?([A-Za-z_][A-Za-z0-9_]*)`?\s*\(",
@@ -355,7 +360,13 @@ def extract_create_tables(sql):
 
             column_name = column_match.group(1)
             column_definition = column_match.group(2).strip()
-            column_type = column_definition.split()[0]
+            # keep the whole type, e.g. ENUM('a','b',...) that spans lines
+            type_match = re.match(r"[A-Za-z]+\s*(\([^)]*\))?", column_definition)
+            if type_match:
+                column_type = re.sub(r"\s+", " ", type_match.group(0))
+                column_type = re.sub(r"\s*([(),])\s*", r"\1", column_type).strip()  # keeps 'living room'
+            else:
+                column_type = column_definition.split()[0]
 
             columns.append((column_name, column_type))
 
@@ -986,8 +997,11 @@ story.append(
     Paragraph(
         "The diagram uses Chen notation: rectangles represent entities, "
         "diamonds represent relationships, and ovals represent attributes. "
-        "Key attributes are underlined, and the diagram uses the applicable "
-        "relationship and participation notation from the course.",
+        "Key attributes are underlined. An arrow from an entity into a "
+        "relationship marks a key constraint (the entity takes part at most "
+        "once), a thick line marks total participation (at least once), and a "
+        "thick arrow means exactly once. Foreign keys are represented by the "
+        "relationships, so they are not drawn as attribute ovals.",
         styles["BodyTextCustom"],
     )
 )

@@ -1,5 +1,6 @@
 Flask>=3.0
 PyMySQL>=1.1
 Werkzeug>=3.0
+cryptography>=42
 reportlab
 Pillow

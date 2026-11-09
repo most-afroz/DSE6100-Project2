@@ -1102,7 +1102,7 @@ pre {
 
 /* =========================================================
    5. FLOORING MATERIAL PREVIEWS
-   Real photographic flooring textures
+   CSS-drawn flooring textures (no outside images, works offline)
    Cool luxury palette: ash, grey, ivory and white
    ========================================================= */
 
@@ -1144,195 +1144,117 @@ pre {
 }
 
 
-/* SOLID OAK / NATURAL ASH */
+/* OAK (CSS-drawn planks and grain, no outside image) */
 
-.oak-texture .sample-one,
-.oak-texture .sample-two,
-.oak-texture .sample-three {
-    background-image: url("https://www.builddirect.com/cdn/shop/files/15270549-06.jpg?v=1689302212&width=2400");
+.oak-texture .texture-swatch {
+    background-color: #C9A475;
+    background-image:
+        repeating-linear-gradient(0deg, transparent 0 22%, rgba(60,40,20,.35) 22% calc(22% + 1px)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 2px, transparent 2px 7px, rgba(70,45,20,.10) 7px 8px, transparent 8px 13px),
+        linear-gradient(90deg, #E3C9A0, #C9A475 45%, #A9814F);
 }
+.oak-texture .sample-two { background-position: 0 6px, 3px 0, 0 0; filter: brightness(1.04); }
+.oak-texture .sample-three { background-position: 0 12px, 5px 0, 0 0; filter: brightness(.95); }
 
-.oak-texture .sample-one {
-    background-position: 20% center;
+/* MAPLE (CSS-drawn planks and grain, no outside image) */
+
+.maple-texture .texture-swatch {
+    background-color: #E2C590;
+    background-image:
+        repeating-linear-gradient(0deg, transparent 0 25%, rgba(60,40,20,.35) 25% calc(25% + 1px)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 2px, transparent 2px 7px, rgba(70,45,20,.10) 7px 8px, transparent 8px 13px),
+        linear-gradient(90deg, #F1DDB8, #E2C590 45%, #C9A66A);
 }
+.maple-texture .sample-two { background-position: 0 6px, 3px 0, 0 0; filter: brightness(1.04); }
+.maple-texture .sample-three { background-position: 0 12px, 5px 0, 0 0; filter: brightness(.95); }
 
-.oak-texture .sample-two {
-    background-position: 50% center;
+/* HICKORY (CSS-drawn planks and grain, no outside image) */
+
+.hickory-texture .texture-swatch {
+    background-color: #B78C5C;
+    background-image:
+        repeating-linear-gradient(0deg, transparent 0 20%, rgba(60,40,20,.35) 20% calc(20% + 1px)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 2px, transparent 2px 7px, rgba(70,45,20,.10) 7px 8px, transparent 8px 13px),
+        linear-gradient(90deg, #D9B98C, #B78C5C 45%, #8E6A43);
 }
+.hickory-texture .sample-two { background-position: 0 6px, 3px 0, 0 0; filter: brightness(1.04); }
+.hickory-texture .sample-three { background-position: 0 12px, 5px 0, 0 0; filter: brightness(.95); }
 
-.oak-texture .sample-three {
-    background-position: 80% center;
+/* VINYL (CSS-drawn planks and grain, no outside image) */
+
+.vinyl-texture .texture-swatch {
+    background-color: #BDB4A4;
+    background-image:
+        repeating-linear-gradient(0deg, transparent 0 30%, rgba(60,40,20,.35) 30% calc(30% + 1px)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 2px, transparent 2px 7px, rgba(70,45,20,.10) 7px 8px, transparent 8px 13px),
+        linear-gradient(90deg, #D8D2C6, #BDB4A4 45%, #9D9483);
 }
+.vinyl-texture .sample-two { background-position: 0 6px, 3px 0, 0 0; filter: brightness(1.04); }
+.vinyl-texture .sample-three { background-position: 0 12px, 5px 0, 0 0; filter: brightness(.95); }
 
+/* LAMINATE (CSS-drawn planks and grain, no outside image) */
 
-/* MAPLE */
-
-.maple-texture .sample-one,
-.maple-texture .sample-two,
-.maple-texture .sample-three {
-    background-image: url("https://www.builddirect.com/cdn/shop/files/15270549-06.jpg?v=1689302212&width=2400");
+.laminate-texture .texture-swatch {
+    background-color: #C2C7C6;
+    background-image:
+        repeating-linear-gradient(0deg, transparent 0 26%, rgba(60,40,20,.35) 26% calc(26% + 1px)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 2px, transparent 2px 7px, rgba(70,45,20,.10) 7px 8px, transparent 8px 13px),
+        linear-gradient(90deg, #DADDDC, #C2C7C6 45%, #A7AEAD);
 }
+.laminate-texture .sample-two { background-position: 0 6px, 3px 0, 0 0; filter: brightness(1.04); }
+.laminate-texture .sample-three { background-position: 0 12px, 5px 0, 0 0; filter: brightness(.95); }
 
-.maple-texture .sample-one {
-    background-position: 15% center;
+/* PLUSH (CSS-drawn fibre texture, no outside image) */
+
+.plush-texture .texture-swatch {
+    background-color: #D9CBB3;
+    background-image:
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,.35) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 75% 60%, rgba(0,0,0,.10) 0 1px, transparent 1.5px),
+        linear-gradient(160deg, #D9CBB3, #C4B396);
+    background-size: 5px 5px, 4px 4px, 100% 100%;
 }
+.plush-texture .sample-two { filter: brightness(1.05); }
+.plush-texture .sample-three { filter: brightness(.94); }
 
-.maple-texture .sample-two {
-    background-position: 50% center;
+/* CARPET (CSS-drawn fibre texture, no outside image) */
+
+.carpet-texture .texture-swatch {
+    background-color: #D1C5B1;
+    background-image:
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,.35) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 75% 60%, rgba(0,0,0,.10) 0 1px, transparent 1.5px),
+        linear-gradient(160deg, #D1C5B1, #BBAC92);
+    background-size: 5px 5px, 4px 4px, 100% 100%;
 }
+.carpet-texture .sample-two { filter: brightness(1.05); }
+.carpet-texture .sample-three { filter: brightness(.94); }
 
-.maple-texture .sample-three {
-    background-position: 85% center;
+/* BERBER CARPET (CSS-drawn loop pattern, no outside image) */
+
+.berber-texture .texture-swatch {
+    background-color: #DCD3C2;
+    background-image:
+        radial-gradient(ellipse 3px 2px at 50% 50%, rgba(120,105,80,.45) 0 60%, transparent 70%),
+        radial-gradient(ellipse 3px 2px at 50% 50%, rgba(255,255,255,.5) 0 60%, transparent 70%);
+    background-size: 6px 5px, 6px 5px;
+    background-position: 0 0, 3px 2.5px;
 }
+.berber-texture .sample-two { filter: brightness(1.04); }
+.berber-texture .sample-three { filter: brightness(.95); }
 
+/* MARBLE (CSS-drawn veins, no outside image) */
 
-/* ENGINEERED HICKORY / ENGINEERED WOOD */
-
-.hickory-texture .sample-one,
-.hickory-texture .sample-two,
-.hickory-texture .sample-three {
-    background-image: url("https://www.woodco.com/web/image/product.product/3335/image_1024/%5BHKS106-001%5D%20Sugar%20Plank%20%281-2%22%20%283mm%29%29?unique=a34cdec");
-    background-size: cover;
+.marble-texture .texture-swatch {
+    background-color: #F3F2EE;
+    background-image:
+        linear-gradient(115deg, transparent 0 38%, rgba(120,125,130,.35) 39%, transparent 41%),
+        linear-gradient(60deg, transparent 0 62%, rgba(140,145,150,.28) 63%, transparent 64.5%),
+        linear-gradient(150deg, transparent 0 20%, rgba(150,150,155,.22) 21%, transparent 22%),
+        radial-gradient(ellipse at 30% 30%, #FFFFFF, #E8E7E2 70%);
 }
-
-.hickory-texture .sample-one {
-    background-position: 15% center;
-}
-
-.hickory-texture .sample-two {
-    background-position: 50% center;
-}
-
-.hickory-texture .sample-three {
-    background-position: 85% center;
-}
-
-
-/* LUXURY VINYL PLANK */
-
-.vinyl-texture .sample-one,
-.vinyl-texture .sample-two,
-.vinyl-texture .sample-three {
-    background-image: url("https://bestflooringhonolulu.com/cdn/shop/products/KAT01189.jpg?v=1673475236");
-}
-
-.vinyl-texture .sample-one {
-    background-position: 15% center;
-}
-
-.vinyl-texture .sample-two {
-    background-position: 50% center;
-}
-
-.vinyl-texture .sample-three {
-    background-position: 85% center;
-}
-
-
-/* LAMINATE */
-
-.laminate-texture .sample-one,
-.laminate-texture .sample-two,
-.laminate-texture .sample-three {
-    background-image: url("https://www.builddirect.com/cdn/shop/files/Laminate-15275646-LightGray-Web-Side_9d214e44-9a16-47e4-a6d0-9e576e04670e.jpg?v=1742231073&width=1200");
-    background-size: cover;
-}
-
-.laminate-texture .sample-one {
-    background-position: 15% center;
-}
-
-.laminate-texture .sample-two {
-    background-position: 50% center;
-}
-
-.laminate-texture .sample-three {
-    background-position: 85% center;
-}
-
-
-/* PLUSH CARPET */
-
-.plush-texture .sample-one,
-.plush-texture .sample-two,
-.plush-texture .sample-three {
-    background-image: url("https://www.nfm.com/on/demandware.static/-/Sites-nfm-master-catalog/default/dwb26c54a4/images/007/73/7736103-1.jpg");
-}
-
-.plush-texture .sample-one {
-    background-position: 20% center;
-}
-
-.plush-texture .sample-two {
-    background-position: 50% center;
-}
-
-.plush-texture .sample-three {
-    background-position: 80% center;
-}
-
-
-/* BERBER CARPET */
-
-.berber-texture .sample-one,
-.berber-texture .sample-two,
-.berber-texture .sample-three {
-    background-image: url("https://www.greenbuildingsupply.com/cdn/shop/files/Natures-Carpet-Everest-Snow-Cap-16456-LG_skus16456.jpg?v=1747419655&width=1946");
-}
-
-.berber-texture .sample-one {
-    background-position: 15% center;
-}
-
-.berber-texture .sample-two {
-    background-position: 50% center;
-}
-
-.berber-texture .sample-three {
-    background-position: 85% center;
-}
-
-
-/* GENERAL CARPET FALLBACK */
-
-.carpet-texture .sample-one,
-.carpet-texture .sample-two,
-.carpet-texture .sample-three {
-    background-image: url("https://www.nfm.com/on/demandware.static/-/Sites-nfm-master-catalog/default/dwb26c54a4/images/007/73/7736103-1.jpg");
-}
-
-.carpet-texture .sample-one {
-    background-position: 15% center;
-}
-
-.carpet-texture .sample-two {
-    background-position: 50% center;
-}
-
-.carpet-texture .sample-three {
-    background-position: 85% center;
-}
-
-
-/* MARBLE */
-
-.marble-texture .sample-one,
-.marble-texture .sample-two,
-.marble-texture .sample-three {
-    background-image: url("https://encyclopedia.design/wp-content/uploads/2021/06/Bianco-Carrara.jpeg");
-}
-
-.marble-texture .sample-one {
-    background-position: 15% center;
-}
-
-.marble-texture .sample-two {
-    background-position: 50% center;
-}
-
-.marble-texture .sample-three {
-    background-position: 85% center;
-}
+.marble-texture .sample-two { background-position: 6px 0, -4px 0, 0 3px, 0 0; }
+.marble-texture .sample-three { background-position: -6px 0, 5px 0, 0 -3px, 0 0; }
 
 
 /* ---------------------------------------------------------

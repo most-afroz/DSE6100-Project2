@@ -238,7 +238,8 @@
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js 4.4.1 (MIT) bundled locally so the charts work without internet -->
+<script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

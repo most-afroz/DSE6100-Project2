@@ -521,16 +521,29 @@ def anna_home():
     """)
 
     # Chart 2: Monthly requests over the last six months
+    # same six calendar months as the revenue chart, so a month with
+    # no requests shows as 0 instead of disappearing
     monthly_requests = q_all("""
-        SELECT DATE_FORMAT(created_at, '%b %Y') AS month,
-               YEAR(created_at) AS year_num,
-               MONTH(created_at) AS month_num,
-               COUNT(*) AS total
-        FROM flooring_request
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-        GROUP BY YEAR(created_at), MONTH(created_at),
-                 DATE_FORMAT(created_at, '%b %Y')
-        ORDER BY year_num, month_num
+        WITH RECURSIVE months AS (
+            SELECT DATE_SUB(
+                CAST(DATE_FORMAT(CURDATE(), '%Y-%m-01') AS DATE),
+                INTERVAL 5 MONTH
+            ) AS month_start
+            UNION ALL
+            SELECT DATE_ADD(month_start, INTERVAL 1 MONTH)
+            FROM months
+            WHERE month_start < CAST(DATE_FORMAT(CURDATE(), '%Y-%m-01') AS DATE)
+        )
+        SELECT DATE_FORMAT(m.month_start, '%b %Y') AS month,
+               YEAR(m.month_start) AS year_num,
+               MONTH(m.month_start) AS month_num,
+               COUNT(r.request_id) AS total
+        FROM months m
+        LEFT JOIN flooring_request r
+               ON r.created_at >= m.month_start
+              AND r.created_at < DATE_ADD(m.month_start, INTERVAL 1 MONTH)
+        GROUP BY m.month_start
+        ORDER BY m.month_start
     """)
 
     # Chart 3: Service orders by status

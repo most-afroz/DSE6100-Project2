@@ -127,7 +127,6 @@ digraph ER {
     cat_name [label="category_name (UNIQUE)", pos="790,-991!", pin=true];
     // PRODUCT
     p_id [label=<<U>product_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1029,-953!", pin=true];
-    p_category [label="category_id (FK)", pos="1020,-928!", pin=true];
     p_name [label="product_name", pos="1025,-903!", pin=true];
     p_brand [label="brand", pos="1029,-878!", pin=true];
     p_style [label="material_style", pos="1024,-991!", pin=true];
@@ -141,7 +140,6 @@ digraph ER {
     p_active [label="is_active", pos="1317,-1041!", pin=true];
     // QUOTE
     q_id [label=<<U>quote_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1604,-359!", pin=true];
-    q_request [label="request_id (FK)", pos="1598,-334!", pin=true];
     q_version [label="version_no", pos="1604,-309!", pin=true];
     q_created [label="created_at", pos="1604,-284!", pin=true];
     q_waste [label="waste_pct", pos="1604,-397!", pin=true];
@@ -156,7 +154,6 @@ digraph ER {
     q_decided [label="decided_at", pos="1892,-447!", pin=true];
     // FLOORING REQUEST
     r_id [label=<<U>request_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1029,-62!", pin=true];
-    r_client [label="client_id (FK)", pos="1027,-37!", pin=true];
     r_address [label="service_address", pos="1021,-12!", pin=true];
     r_start [label="pref_start_date", pos="1023,-100!", pin=true];
     r_end [label="pref_end_date", pos="1025,-125!", pin=true];
@@ -168,28 +165,22 @@ digraph ER {
     r_count [label="room_count", style="dashed,filled", fillcolor="#FCE4E4", color="#B76E79", pos="1317,-125!", pin=true];
     // REQUEST ROOM
     rm_id [label=<<U>room_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1029,-656!", pin=true];
-    rm_request [label="request_id (FK)", pos="1023,-631!", pin=true];
     rm_name [label="room_name", pos="1029,-606!", pin=true];
     rm_type [label="room_type", pos="1029,-694!", pin=true];
     rm_length [label="length_ft", pos="1029,-719!", pin=true];
     rm_width [label="width_ft", pos="1029,-744!", pin=true];
     rm_sqft [label="sqft", pos="1317,-656!", pin=true];
-    rm_product [label="product_id (FK)", pos="1324,-631!", pin=true];
     rm_current [label="current_flooring", pos="1325,-606!", pin=true];
     rm_removal [label="removal_required", pos="1329,-694!", pin=true];
     rm_pattern [label="install_pattern", pos="1323,-719!", pin=true];
     // REQUEST PHOTO
     ph_id [label=<<U>photo_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1892,-62!", pin=true];
-    ph_request [label="request_id (FK)", pos="1898,-37!", pin=true];
     ph_number [label="photo_no", pos="1892,-12!", pin=true];
     ph_file [label="file_name", pos="1892,-100!", pin=true];
     ph_uploaded [label="uploaded_at", pos="1893,-125!", pin=true];
     // QUOTE ITEM
     qi_id [label=<<U>quote_item_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1600,-656!", pin=true];
-    qi_quote [label="quote_id (FK)", pos="1602,-631!", pin=true];
     qi_type [label="item_type", pos="1604,-606!", pin=true];
-    qi_room [label="room_id (FK, nullable)", pos="1584,-694!", pin=true];
-    qi_product [label="product_id (FK, nullable)", pos="1579,-719!", pin=true];
     qi_description [label="description", pos="1604,-744!", pin=true];
     qi_area [label="area_sqft", pos="1892,-656!", pin=true];
     qi_quantity [label="quantity", pos="1892,-631!", pin=true];
@@ -198,16 +189,12 @@ digraph ER {
     qi_amount [label="amount", pos="1892,-719!", pin=true];
     // NEGOTIATION MESSAGE
     nm_id [label=<<U>message_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="1317,-359!", pin=true];
-    nm_request [label="request_id (FK)", pos="1324,-334!", pin=true];
-    nm_quote [label="quote_id (FK, nullable)", pos="1339,-309!", pin=true];
     nm_sender [label="sender", pos="1317,-284!", pin=true];
     nm_type [label="msg_type", pos="1317,-397!", pin=true];
     nm_message [label="message", pos="1317,-422!", pin=true];
     nm_created [label="created_at", pos="1317,-447!", pin=true];
     // SERVICE ORDER
     o_id [label=<<U>order_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="475,-359!", pin=true];
-    o_quote [label="quote_id (FK, UNIQUE)", pos="454,-334!", pin=true];
-    o_client [label="client_id (FK)", pos="472,-309!", pin=true];
     o_address [label="service_address", pos="466,-397!", pin=true];
     o_price [label="agreed_price", pos="472,-422!", pin=true];
     o_start [label="scheduled_start", pos="467,-447!", pin=true];
@@ -219,16 +206,12 @@ digraph ER {
     o_note [label="completion_note", pos="772,-447!", pin=true];
     // ORDER ITEM
     oi_id [label=<<U>order_item_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="471,-656!", pin=true];
-    oi_order [label="order_id (FK)", pos="473,-631!", pin=true];
-    oi_room [label="room_id (FK)", pos="474,-694!", pin=true];
-    oi_product [label="product_id (FK)", pos="469,-719!", pin=true];
     oi_installed [label="installed_sqft", pos="765,-656!", pin=true];
     oi_est [label="est_qty_sqft", pos="763,-631!", pin=true];
     oi_actual [label="actual_qty_sqft", pos="769,-694!", pin=true];
     oi_price [label="unit_price_sqft", pos="768,-719!", pin=true];
     // BILL
     b_id [label=<<U>bill_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="209,-359!", pin=true];
-    b_order [label="order_id (FK)", pos="211,-334!", pin=true];
     b_version [label="version_no", pos="209,-309!", pin=true];
     b_created [label="created_at", pos="209,-284!", pin=true];
     b_amount [label="amount_due", pos="210,-397!", pin=true];
@@ -236,20 +219,17 @@ digraph ER {
     b_status [label="status", pos="209,-447!", pin=true];
     // BILL ITEM
     bi_id [label=<<U>bill_item_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="209,-953!", pin=true];
-    bi_bill [label="bill_id (FK)", pos="209,-928!", pin=true];
     bi_type [label="item_type", pos="209,-903!", pin=true];
     bi_description [label="description", pos="209,-991!", pin=true];
     bi_amount [label="amount", pos="209,-1016!", pin=true];
     // BILL MESSAGE
     bm_id [label=<<U>message_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="209,-62!", pin=true];
-    bm_bill [label="bill_id (FK)", pos="209,-37!", pin=true];
     bm_sender [label="sender", pos="209,-12!", pin=true];
     bm_type [label="msg_type", pos="209,-100!", pin=true];
     bm_message [label="message", pos="209,-125!", pin=true];
     bm_created [label="created_at", pos="209,-150!", pin=true];
     // PAYMENT
     pay_id [label=<<U>payment_id</U>>, fillcolor="#FFF0D6", color="#B8862B", penwidth=1.2, pos="209,-656!", pin=true];
-    pay_bill [label="bill_id (FK, UNIQUE)", pos="224,-631!", pin=true];
     pay_amount [label="amount", pos="209,-606!", pin=true];
     pay_date [label="paid_at", pos="209,-694!", pin=true];
     pay_last4 [label="card_last4", pos="209,-719!", pin=true];
@@ -258,77 +238,81 @@ digraph ER {
     // RELATIONSHIP CONNECTIONS
     // ==========================================
 
+    // Notation: an arrow leaves the entity that takes part AT MOST ONCE and
+    // points into the diamond (key constraint). penwidth=3 = total
+    // participation (at least once). Thick arrow = exactly once.
+
     // Blue: client and request flow
     edge [color="#4776A8", constraint=true, arrowhead=none, penwidth=0.8];
-    Client -> Submits [penwidth=1, dir=back, arrowtail=normal];
-    Request -> Submits [penwidth=3];
-    Client -> Places [penwidth=1, dir=back, arrowtail=normal];
-    Order -> Places [penwidth=3];
-    Request -> w_Contains_Request_0 [penwidth=1, dir=back, arrowtail=normal];
-    w_Contains_Request_0 -> w_Contains_Request_1 [penwidth=1];
-    w_Contains_Request_1 -> Contains [penwidth=1];
+    Client -> Submits [penwidth=1];
+    Request -> Submits [penwidth=3, arrowhead=normal];
+    Client -> Places [penwidth=1];
+    Order -> Places [penwidth=3, arrowhead=normal];
+    Request -> w_Contains_Request_0 [penwidth=3];
+    w_Contains_Request_0 -> w_Contains_Request_1 [penwidth=3];
+    w_Contains_Request_1 -> Contains [penwidth=3];
     Room -> w_Contains_Room_0 [penwidth=3];
     w_Contains_Room_0 -> w_Contains_Room_1 [penwidth=3];
-    w_Contains_Room_1 -> Contains [penwidth=3];
-    Request -> HasPhoto [penwidth=1, dir=back, arrowtail=normal];
-    Photo -> HasPhoto [penwidth=3];
+    w_Contains_Room_1 -> Contains [penwidth=3, arrowhead=normal];
+    Request -> HasPhoto [penwidth=1];
+    Photo -> HasPhoto [penwidth=3, arrowhead=normal];
 
     // Teal: product and room relationships
     edge [color="#3F8275"];
-    Product -> BelongsTo [penwidth=3];
-    BelongsTo -> Category [penwidth=1, arrowhead=normal];
-    Room -> Wants [penwidth=3];
-    Wants -> Product [penwidth=1, arrowhead=normal];
-    QItem -> ForRoom [penwidth=1];
-    ForRoom -> Room [penwidth=1, arrowhead=normal];
+    Product -> BelongsTo [penwidth=3, arrowhead=normal];
+    BelongsTo -> Category [penwidth=1];
+    Room -> Wants [penwidth=3, arrowhead=normal];
+    Wants -> Product [penwidth=1];
+    QItem -> ForRoom [penwidth=1, arrowhead=normal];
+    ForRoom -> Room [penwidth=1];
     QItem -> w_OfProduct_QItem_0 [penwidth=1];
-    w_OfProduct_QItem_0 -> OfProduct [penwidth=1];
+    w_OfProduct_QItem_0 -> OfProduct [penwidth=1, arrowhead=normal];
     OfProduct -> w_OfProduct_Product_0 [penwidth=1];
-    w_OfProduct_Product_0 -> Product [penwidth=1, arrowhead=normal];
-    OItem -> Installs [penwidth=3];
-    Installs -> Room [penwidth=1, arrowhead=normal];
+    w_OfProduct_Product_0 -> Product [penwidth=1];
+    OItem -> Installs [penwidth=3, arrowhead=normal];
+    Installs -> Room [penwidth=1];
     OItem -> w_Uses_OItem_0 [penwidth=3];
-    w_Uses_OItem_0 -> Uses [penwidth=3];
-    Uses -> w_Uses_Product_0 [penwidth=3];
-    w_Uses_Product_0 -> Product [penwidth=1, arrowhead=normal];
+    w_Uses_OItem_0 -> Uses [penwidth=3, arrowhead=normal];
+    Uses -> w_Uses_Product_0 [penwidth=1];
+    w_Uses_Product_0 -> Product [penwidth=1];
 
     // Purple: quote workflow
     edge [color="#8063A6"];
-    Request -> w_QuotedIn_Request_0 [penwidth=1, dir=back, arrowtail=normal];
+    Request -> w_QuotedIn_Request_0 [penwidth=1];
     w_QuotedIn_Request_0 -> QuotedIn [penwidth=1];
     Quote -> w_QuotedIn_Quote_0 [penwidth=3];
-    w_QuotedIn_Quote_0 -> QuotedIn [penwidth=3];
-    Quote -> Itemizes [penwidth=1, dir=back, arrowtail=normal];
-    QItem -> Itemizes [penwidth=3];
-    NMsg -> Answers [penwidth=1];
-    Answers -> Quote [penwidth=1, arrowhead=normal];
-    Quote -> w_Becomes_Quote_0 [penwidth=1, dir=back, arrowtail=normal];
-    w_Becomes_Quote_0 -> Becomes [penwidth=1];
-    Becomes -> w_Becomes_Order_0 [penwidth=1];
-    w_Becomes_Order_0 -> Order [penwidth=3, arrowhead=normal];
+    w_QuotedIn_Quote_0 -> QuotedIn [penwidth=3, arrowhead=normal];
+    Quote -> Itemizes [penwidth=3];
+    QItem -> Itemizes [penwidth=3, arrowhead=normal];
+    NMsg -> Answers [penwidth=1, arrowhead=normal];
+    Answers -> Quote [penwidth=1];
+    Quote -> w_Becomes_Quote_0 [penwidth=1];
+    w_Becomes_Quote_0 -> Becomes [penwidth=1, arrowhead=normal];
+    Becomes -> w_Becomes_Order_0 [penwidth=3, dir=back, arrowtail=normal];
+    w_Becomes_Order_0 -> Order [penwidth=3];
 
     // Pink: communication
     edge [color="#A65D80"];
-    NMsg -> About [penwidth=3];
-    About -> Request [penwidth=1, arrowhead=normal];
-    Bill -> Discusses [penwidth=1, dir=back, arrowtail=normal];
-    BMsg -> Discusses [penwidth=3];
+    NMsg -> About [penwidth=3, arrowhead=normal];
+    About -> Request [penwidth=1];
+    Bill -> Discusses [penwidth=1];
+    BMsg -> Discusses [penwidth=3, arrowhead=normal];
 
     // Orange: order and installation flow
     edge [color="#B87935"];
-    Order -> Includes [penwidth=1, dir=back, arrowtail=normal];
-    OItem -> Includes [penwidth=3];
-    Order -> BilledBy [penwidth=1, dir=back, arrowtail=normal];
-    Bill -> BilledBy [penwidth=3];
+    Order -> Includes [penwidth=3];
+    OItem -> Includes [penwidth=3, arrowhead=normal];
+    Order -> BilledBy [penwidth=1];
+    Bill -> BilledBy [penwidth=3, arrowhead=normal];
 
     // Green: billing and payment
     edge [color="#63864C"];
-    Bill -> w_Lists_Bill_0 [penwidth=1, dir=back, arrowtail=normal];
-    w_Lists_Bill_0 -> Lists [penwidth=1];
+    Bill -> w_Lists_Bill_0 [penwidth=3];
+    w_Lists_Bill_0 -> Lists [penwidth=3];
     BItem -> w_Lists_BItem_0 [penwidth=3];
-    w_Lists_BItem_0 -> Lists [penwidth=3];
-    Bill -> PaidBy [penwidth=1, dir=back, arrowtail=normal];
-    PaidBy -> Payment [penwidth=3, arrowhead=normal];
+    w_Lists_BItem_0 -> Lists [penwidth=3, arrowhead=normal];
+    Bill -> PaidBy [penwidth=1, arrowhead=normal];
+    PaidBy -> Payment [penwidth=3, dir=back, arrowtail=normal];
 
     // Invisible bend points used to route edges around other nodes
     node [shape=point, width=0.01, height=0.01, style=invis, label=""];
@@ -374,8 +358,8 @@ digraph ER {
     ];
 
     Legend [
-        label="CHEN NOTATION\nRectangle = Entity\nDiamond = Relationship\nOval = Attribute\nUnderlined = Primary key\nDashed oval = Derived attribute\nThin line = Partial participation\nThick line = Total participation\nThin arrow = At most one\nThick arrow = Exactly one",
-        pos="1793,-860!", pin=true
+        label="CHEN NOTATION\nRectangle = Entity\nDiamond = Relationship\nOval = Attribute\nUnderlined = Primary key\nDashed oval = Derived attribute\nThin line = Partial participation\nThick line = Total participation (at least one)\nArrow from entity into diamond = Key constraint (at most one)\nThick arrow = Exactly one\nForeign keys are shown by the relationships,\nnot as attribute ovals",
+        pos="1935,-818!", pin=true
     ];
 
     LegendColors [
@@ -407,60 +391,60 @@ digraph ER {
     Category -> {cat_id cat_name};
 
     Product -> {
-        p_id p_category p_name p_brand p_style p_color
+        p_id  p_name p_brand p_style p_color
         p_price p_unit p_length p_width p_coverage p_description
         p_active
     };
 
     Quote -> {
-        q_id q_request q_version q_created q_waste q_material
+        q_id  q_version q_created q_waste q_material
         q_labor q_other q_total q_start q_end q_note
         q_status q_decided
     };
 
     Request -> {
-        r_id r_client r_address r_start r_end r_budget
+        r_id  r_address r_start r_end r_budget
         r_note r_status r_created r_total r_count
     };
 
     Room -> {
-        rm_id rm_request rm_name rm_type rm_length rm_width
-        rm_sqft rm_product rm_current rm_removal rm_pattern
+        rm_id  rm_name rm_type rm_length rm_width
+        rm_sqft  rm_current rm_removal rm_pattern
     };
 
-    Photo -> {ph_id ph_request ph_number ph_file ph_uploaded};
+    Photo -> {ph_id  ph_number ph_file ph_uploaded};
 
     QItem -> {
-        qi_id qi_quote qi_type qi_room qi_product qi_description
+        qi_id  qi_type   qi_description
         qi_area qi_quantity qi_unit qi_price qi_amount
     };
 
     NMsg -> {
-        nm_id nm_request nm_quote nm_sender nm_type nm_message
+        nm_id   nm_sender nm_type nm_message
         nm_created
     };
 
     Order -> {
-        o_id o_quote o_client o_address o_price o_start
+        o_id   o_address o_price o_start
         o_end o_status o_created o_install o_completion o_note
     };
 
     OItem -> {
-        oi_id oi_order oi_room oi_product oi_installed oi_est
+        oi_id    oi_installed oi_est
         oi_actual oi_price
     };
 
     Bill -> {
-        b_id b_order b_version b_created b_amount b_note
+        b_id  b_version b_created b_amount b_note
         b_status
     };
 
-    BItem -> {bi_id bi_bill bi_type bi_description bi_amount};
+    BItem -> {bi_id  bi_type bi_description bi_amount};
 
     BMsg -> {
-        bm_id bm_bill bm_sender bm_type bm_message bm_created
+        bm_id  bm_sender bm_type bm_message bm_created
     };
 
-    Payment -> {pay_id pay_bill pay_amount pay_date pay_last4};
+    Payment -> {pay_id  pay_amount pay_date pay_last4};
 
 }
