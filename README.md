@@ -165,7 +165,8 @@ docs/backup/                    Original E-R diagram files
 docs/make_pdf.py                Project PDF-generation script
 docs/Project2.pdf               Project report PDF
 templates/                      HTML pages
-static/style.css                Application styling (flooring textures are drawn in CSS)
+static/style.css                Application styling and flooring photo previews
+static/images/flooring/         11 locally hosted flooring material images
 static/vendor/chart.umd.min.js  Chart.js 4.4.1 (MIT license) bundled so dashboard charts work offline
 uploads/                        Client photos are saved here (created automatically on first run)
 ```
@@ -175,7 +176,7 @@ uploads/                        Client photos are saved here (created automatica
 | Project Area | Most Afroz | Rifah Tasniya |
 |---|---|---|
 | **Part 1: Database Design & Documentation** | - Created the original E-R diagram and designed and implemented the relational database, including tables, schema, and constraints.<br>- Prepared the initial assumptions, relational-schema documentation, and PDF-generation script. | - Refined the E-R diagram using traditional Chen notation to align with course lectures and project requirements.<br>- Expanded the report with entity definitions, relationship constraints, and consolidated assumptions.<br>- Reworked the PDF-generation script, automated relational-schema extraction, and substantially improved report organization, layout, and presentation. |
-| **Part 2: Application Development** | - Implemented contractor and client application functionality, including backend workflows for requests, products, quotes, negotiations, orders, billing, disputes, and payments. | - Redeveloped shared application styling and navigation, and redesigned contractor dashboard and client-facing request interfaces.<br>- Added flooring material texture previews, color/sample previews, and estimated material-cost calculations. |
+| **Part 2: Application Development** | - Implemented contractor and client application functionality, including backend workflows for requests, products, quotes, negotiations, orders, billing, disputes, and payments. | - Redeveloped shared application styling and navigation, and redesigned contractor dashboard and client-facing request interfaces.<br>- Added 11 locally hosted flooring images, replacing generic CSS-generated material samples with representative product photographs.<br>- Connected material selections to their corresponding local images and updated responsive preview styling.<br>- Added flooring color/sample previews and estimated material-cost calculations. |
 | **Part 3: SQL & Dashboard Analytics** | - Authored all 10 required SQL queries and developed the SQL-driven dashboard business overview and KPI components. | - Led dashboard redevelopment, restructuring its layout and visual design and implementing four analytics charts with supporting data queries. |
 | **Project Setup & Demonstration** | - Created and configured the GitHub repository and established the project structure.<br>- Uploaded the final project submission to Canvas. | - Tested application setup on a second laptop.<br>- Recorded and uploaded the project demonstration video to YouTube. |
 
@@ -185,6 +186,5 @@ uploads/                        Client photos are saved here (created automatica
 - End-to-end testing and final application review.
 - README preparation and review.
 - Collaborative demonstration preparation and recording.
-
 
 **Total time spent working together: 4.5 hours.**
