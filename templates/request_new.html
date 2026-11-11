@@ -174,23 +174,17 @@
                     </select>
                 </label>
 
-                <!-- REPRESENTATIVE TEXTURE SAMPLES -->
-
+                <!-- REPRESENTATIVE TEXTURE SAMPLE -->
                 <div class="material-preview">
-
                     <div class="texture-samples oak-texture"
                          data-material-texture>
                         <span class="texture-swatch sample-one"></span>
-                        <span class="texture-swatch sample-two"></span>
-                        <span class="texture-swatch sample-three"></span>
                     </div>
-
                     <div class="material-preview-info">
                         <strong data-material-name></strong>
                         <span data-material-price></span>
-                        <small>Representative color and texture samples. Actual appearance may vary.</small>
+                        <small>Representative color and texture. Actual appearance may vary.</small>
                     </div>
-
                 </div>
 
             </div>
@@ -309,7 +303,7 @@ function updateMaterialPreview(select) {
     } else if (category.includes('marble')) {
         textureClass = 'marble-texture';
 
-      } else if (category.includes('porcelain')) {
+    } else if (category.includes('porcelain')) {
         textureClass = 'porcelain-texture';
 
     } else if (category.includes('ceramic')) {
@@ -327,20 +321,20 @@ function updateMaterialPreview(select) {
     } else if (category.includes('maple')) {
         textureClass = 'maple-texture';
 
-    } else if (category.includes('vinyl') || category.includes('lvp')) {
-        textureClass = 'vinyl-texture';
+    } else if (category.includes('waterproof')) {
+        textureClass = 'waterproof-lvp-texture';
+    } else if (category.includes('luxury')) {
+        textureClass = 'luxury-vinyl-texture';
 
     } else if (category.includes('laminate')) {
         textureClass = 'laminate-texture';
-
-    } else if (category.includes('carpet')) {
-        textureClass = 'carpet-texture';
 
     } else if (category.includes('oak')) {
         textureClass = 'oak-texture';
     }
 
     texture.className = 'texture-samples ' + textureClass;
+
 
     room.querySelector('[data-material-name]').textContent = name;
 
