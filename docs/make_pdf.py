@@ -50,7 +50,7 @@ STUDENTS = [
     ("Most Afroz", "ic4104"),
 ]
 
-VIDEO_URL = "https://PASTE-YOUR-VIDEO-LINK-HERE"
+VIDEO_URL = "https://youtu.be/1mPuhuEytJQ"
 
 PAGE_WIDTH, PAGE_HEIGHT = letter
 LEFT_MARGIN = 0.65 * inch

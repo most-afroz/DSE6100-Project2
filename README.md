@@ -2,7 +2,7 @@
 
 **Collaborators:** Most. Afroz and Rifah Tasniya
 
-**Demo video:** PASTE YOUR VIDEO LINK HERE
+**Demo video:** [https://youtu.be/1mPuhuEytJQ](https://youtu.be/1mPuhuEytJQ)
 
 This is a small web app for Anna Johnson's flooring business. Clients register, send a flooring request with one or more rooms and up to 5 photos, then go back and forth with Anna on quotes until one is accepted. An accepted quote turns into an order, and after the job Anna bills it. The client can pay or dispute, and Anna can explain or send a revised bill. Every quote version and bill version is kept. Anna also has a dashboard with the 10 required SQL reports.
 
